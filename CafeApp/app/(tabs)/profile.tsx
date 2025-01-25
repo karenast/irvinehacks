@@ -1,6 +1,7 @@
-import { StyleSheet, Image, Platform, Pressable, Alert, View } from 'react-native';
-// import * as ImagePicker from 'expo-image-picker';
+import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
+//import { RadioButton } from 'react-native-paper'; 
 
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
@@ -9,6 +10,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { MaterialIcons } from '@expo/vector-icons';
+import { GlobalDropdown } from '@/components/GlobalDropdown';
 
 const getInitials = (name: string) => {
   return name
@@ -19,219 +21,293 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
-export default function TabTwoScreen() {
+export default function ProfileScreen() {
+  const colorScheme = useColorScheme();
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [followersCount, setFollowersCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
+  const [friendsCount, setFriendsCount] = useState(0);
+  const [goal, setGoal] = useState('20');
+  const [showMenu, setShowMenu] = useState(false);
+
+  const isDark = colorScheme === 'dark';
+  const textColor = isDark ? '#F3F1EB' : '#958475';
+  const backgroundColor = isDark ? '#958475' : '#F3F1EB';
+  const sideColor = isDark ? '#958475' : '#F3F1EB';
+
+  const pickImage = async () => {
+    // Request permission to access the media library
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission Needed',
+        'Sorry, we need camera roll permissions to change your profile picture.'
+      );
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        setProfileImage(result.assets[0].uri);
+        // Here you would typically upload the image to your backend
+        // Example:
+        // await uploadImageToServer(result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image');
+    }
+  };
+
+  const menuItems = [
+    {
+      label: 'Settings',
+      icon: 'settings' as const,
+      onPress: () => Alert.alert('Settings', 'Settings page coming soon!')
+    },
+    {
+      label: 'Help',
+      icon: 'help-outline' as const,
+      onPress: () => Alert.alert('Help', 'Help page coming soon!')
+    },
+    {
+      label: 'Report a Problem',
+      icon: 'report-problem' as const,
+      onPress: () => Alert.alert('Report', 'Report feature coming soon!')
+    }
+  ];
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#F2E8D3', dark: '#F2E8D3' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="958475"
-          name="chevron.left.forwardslash.chevron.right" // Updated icon name
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedView style={styles.profileInfo}>
-          <Pressable 
-            onPress={() => {
-              Alert.alert('Change Profile Picture', 'This feature will be available soon!');
-            }}
-          >
-            <View style={styles.profileImageContainer}>
-              {profileImage ? (
-                <Image 
-                  source={{ uri: profileImage }}
-                  style={styles.profileImage}
-                />
-              ) : (
-                <View style={[styles.profileImage, styles.initialsContainer]}>
-                  <ThemedText style={styles.initials}>
-                    {getInitials("John Doe")} {/* Replace with actual user name */}
-                  </ThemedText>
-                </View>
-              )}
-              <View style={styles.editOverlay}>
-                <MaterialIcons name="photo-camera" size={24} color="#fff" />
-              </View>
+    <>
+      <ParallaxScrollView
+        headerBackgroundColor={{ light: '#F3F1EB', dark: '#958475' }}
+        headerHeight={200}
+        headerImage={
+          <View style={styles.headerContainer}>
+            <View style={styles.fixedHeader}>
+              <Pressable
+                onPress={() => setShowMenu(true)}
+                style={({ pressed }) => [styles.menuButton, pressed && styles.pressed]}
+              >
+                <MaterialIcons name="menu" size={24} color={textColor} />
+              </Pressable>
             </View>
-          </Pressable>
-          <ThemedText style={styles.username}>Username</ThemedText>
-          <ThemedText style={styles.memberSince}>Member since January 2024</ThemedText>
-          <ThemedView style={styles.buttonContainer}>
-            <Pressable 
-              onPress={() => Alert.alert('Edit Profile', 'Edit profile functionality coming soon!')}
-              style={({ pressed }) => [
-                styles.button,
-                pressed && styles.pressed
-              ]}
-            >
-              <ThemedText style={styles.buttonText}>Edit profile</ThemedText>
+            <Pressable onPress={pickImage}>
+              <View style={styles.profileImageContainer}>
+                {profileImage ? (
+                  <Image 
+                    source={{ uri: profileImage }}
+                    style={styles.headerProfileImage}
+                  />
+                ) : (
+                  <View style={[styles.headerProfileImage, styles.initialsContainer]}>
+                    <ThemedText style={styles.headerInitials}>
+                      {getInitials("John Doe")}
+                    </ThemedText>
+                  </View>
+                )}
+                <View style={styles.editOverlay}>
+                  <MaterialIcons name="photo-camera" size={24} color="#fff" />
+                </View>
+              </View>
             </Pressable>
-            <Pressable 
-              onPress={() => Alert.alert('Share Profile', 'Share profile functionality coming soon!')}
-              style={({ pressed }) => [
-                styles.button,
-                pressed && styles.pressed
-              ]}
-            >
-              <ThemedText style={styles.buttonText}>Share profile</ThemedText>
-            </Pressable>
-          </ThemedView>
+          </View>
+        }
+      >
+        <ThemedView style={[styles.titleContainer, { backgroundColor }]}>
+          <ThemedView style={styles.profileInfo}>
+            <ThemedText style={[styles.username, { color: textColor }]}>Username</ThemedText>
+            <ThemedText style={[styles.memberSince, { color: textColor }]}>Member since January 2024</ThemedText>
+            <ThemedView style={styles.buttonContainer}>
+              <Pressable 
+                onPress={() => Alert.alert('Edit Profile', 'Edit profile functionality coming soon!')}
+                style={({ pressed }) => [
+                  styles.button,
+                  { 
+                    backgroundColor: sideColor,
+                    borderColor: textColor  // Update border color to match text
+                  },
+                  pressed && styles.pressed
+                ]}
+              >
+                <ThemedText style={[styles.buttonText, { color: textColor }]}>Edit profile</ThemedText>
+              </Pressable>
+              <Pressable 
+                onPress={() => Alert.alert('Share Profile', 'Share profile functionality coming soon!')}
+                style={({ pressed }) => [
+                  styles.button,
+                  { 
+                    backgroundColor: sideColor,
+                    borderColor: textColor  // Update border color to match text
+                  },
+                  pressed && styles.pressed
+                ]}
+              >
+                <ThemedText style={[styles.buttonText, { color: textColor }]}>Share profile</ThemedText>
+              </Pressable>
+            </ThemedView>
 
-          <ThemedView style={styles.statsContainer}>
-            <Pressable 
-              style={styles.statItem}
-              onPress={() => Alert.alert('Followers', 'Show followers list')}
-            >
-              <ThemedText style={styles.statNumber}>{followersCount}</ThemedText>
-              <ThemedText style={styles.statLabel}>Followers</ThemedText>
-            </Pressable>
-            <Pressable 
-              style={styles.statItem}
-              onPress={() => Alert.alert('Following', 'Show following list')}
-            >
-              <ThemedText style={styles.statNumber}>{followingCount}</ThemedText>
-              <ThemedText style={styles.statLabel}>Following</ThemedText>
-            </Pressable>
+            <ThemedView style={styles.statsContainer}>
+              <Pressable 
+                style={styles.statItem}
+                onPress={() => Alert.alert('Friends', 'Show friends list')}
+              >
+                <ThemedText style={[styles.statNumber, { color: textColor }]}>{friendsCount}</ThemedText>
+                <ThemedText style={[styles.statLabel, { color: textColor }]}>Friends</ThemedText>
+              </Pressable>
+            </ThemedView>
           </ThemedView>
         </ThemedView>
-      </ThemedView>
 
-      <ThemedView style={styles.listSection}>
-        <Pressable 
-          style={({ pressed }) => [
-            styles.listItem,
-            pressed && styles.pressed
-          ]}
-          onPress={() => Alert.alert('Been', 'Show visited cafes')}
-        >
-          <ThemedView style={styles.listItemLeft}>
-            <MaterialIcons name="check-circle" size={24} color="#958475" />
-            <ThemedText style={styles.listItemText}>Been</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.listItemRight}>
-            <ThemedText style={styles.countText}>0</ThemedText>
-            <MaterialIcons name="chevron-right" size={24} color="#958475" />
-          </ThemedView>
-        </Pressable>
+        <ThemedView style={styles.listSection}>
+          <Pressable 
+            style={({ pressed }) => [
+              styles.listItem,
+              { backgroundColor: sideColor },
+              pressed && styles.pressed
+            ]}
+            onPress={() => Alert.alert('Been', 'Show visited cafes')}
+          >
+            <ThemedView style={styles.listItemLeft}>
+              <MaterialIcons name="local-cafe" size={24} color={textColor} />
+              <ThemedText style={[styles.listItemText, { color: textColor }]}>Been</ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.listItemRight}>
+              <ThemedText style={[styles.countText, { color: textColor }]}>0</ThemedText>
+              <MaterialIcons name="chevron-right" size={24} color={textColor} />
+            </ThemedView>
+          </Pressable>
 
-        <Pressable 
-          style={({ pressed }) => [
-            styles.listItem,
-            pressed && styles.pressed
-          ]}
-          onPress={() => Alert.alert('Want to Try', 'Show wishlist cafes')}
-        >
-          <ThemedView style={styles.listItemLeft}>
-            <MaterialIcons name="bookmark" size={24} color="#958475" />
-            <ThemedText style={styles.listItemText}>Want to Try</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.listItemRight}>
-            <ThemedText style={styles.countText}>0</ThemedText>
-            <MaterialIcons name="chevron-right" size={24} color="#958475" />
-          </ThemedView>
-        </Pressable>
+          <Pressable 
+            style={({ pressed }) => [
+              styles.listItem,
+              { backgroundColor: sideColor },
+              pressed && styles.pressed
+            ]}
+            onPress={() => Alert.alert('Want to Try', 'Show wishlist cafes')}
+          >
+            <ThemedView style={styles.listItemLeft}>
+              <MaterialIcons name="location-on" size={24} color={textColor} />
+              <ThemedText style={[styles.listItemText, { color: textColor }]}>Want to Try</ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.listItemRight}>
+              <ThemedText style={[styles.countText, { color: textColor }]}>0</ThemedText>
+              <MaterialIcons name="chevron-right" size={24} color={textColor} />
+            </ThemedView>
+          </Pressable>
 
-        <Pressable 
-          style={({ pressed }) => [
-            styles.listItem,
-            styles.listItemDisabled,
-            pressed && styles.pressed
-          ]}
-          disabled={true}
-        >
-          <ThemedView style={styles.listItemLeft}>
-            <MaterialIcons name="favorite" size={24} color="#CCCCCC" />
-            <ThemedText style={[styles.listItemText, styles.textDisabled]}>Recs for You</ThemedText>
-          </ThemedView>
-          <MaterialIcons name="lock" size={20} color="#CCCCCC" />
-        </Pressable>
-      </ThemedView>
+          <Pressable 
+            style={({ pressed }) => [
+              styles.listItem,
+              { backgroundColor: sideColor },
+              pressed && styles.pressed
+            ]}
+            onPress={() => Alert.alert('Recs for You', 'Show recommendations')}
+          >
+            <ThemedView style={styles.listItemLeft}>
+              <MaterialIcons name="storefront" size={24} color={textColor} />
+              <ThemedText style={[styles.listItemText, { color: textColor }]}>Recs for You</ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.listItemRight}>
+              <ThemedText style={[styles.countText, { color: textColor }]}>0</ThemedText>
+              <MaterialIcons name="chevron-right" size={24} color={textColor} />
+            </ThemedView>
+          </Pressable>
+        </ThemedView>
 
-      <ThemedText>Member since @certain date.</ThemedText>
-      <Collapsible title="Been">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/profile.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Want to Try">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Recs For You">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
+        <ThemedView style={[styles.goalContainer, { backgroundColor: sideColor }]}>
+          <View style={styles.goalHeader}>
+            <ThemedText style={[styles.goalTitle, { color: textColor }]}>Set your 2025 goal</ThemedText>
+            <ThemedText style={[styles.goalSubtitle, { color: textColor }]}>
+              How many restaurants do you want to try in 2025?
             </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+          </View>
+          
+          <View style={styles.radioGroup}>
+            {['20', '50', '100', 'Customize'].map((value) => (
+              <Pressable
+                key={value}
+                style={[
+                  styles.radioButton,
+                  { 
+                    backgroundColor: sideColor,
+                    borderColor: textColor,
+                    opacity: goal === value ? 1 : 0.7
+                  }
+                ]}
+                onPress={() => setGoal(value)}
+              >
+                <ThemedText style={[styles.radioText, { color: textColor }]}>{value}</ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        </ThemedView>
+
+        <ThemedView style={styles.signOutContainer}>
+          <Pressable 
+            style={({ pressed }) => [
+              styles.signOutButton,
+              { 
+                backgroundColor: sideColor,
+                borderColor: textColor
+              },
+              pressed && styles.pressed
+            ]}
+            onPress={() => Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+              },
+              {
+                text: 'Sign Out',
+                style: 'destructive',
+                onPress: () => {
+                  // Add sign out logic here
+                  Alert.alert('Signed Out', 'You have been signed out successfully');
+                },
+              },
+            ])}
+          >
+            <ThemedText style={[styles.signOutText, { color: textColor }]}>Sign Out</ThemedText>
+          </Pressable>
+        </ThemedView>
+      </ParallaxScrollView>
+      <GlobalDropdown 
+        visible={showMenu}
+        onClose={() => setShowMenu(false)}
+        textColor={textColor}
+        backgroundColor={backgroundColor}
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+  },
+
+  headerContainer: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  headerProfileImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+  },
+  
+  headerInitials: {
+    fontSize: 54,
+    fontWeight: 'bold',
+    color: '#958475',
   },
 
   titleContainer: {
@@ -257,12 +333,10 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
   },
 
   pressed: {
@@ -271,7 +345,6 @@ const styles = StyleSheet.create({
 
   buttonText: {
     fontSize: 14,
-    color: '#000',
   },
 
   profileInfo: {
@@ -284,34 +357,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 12,
     marginBottom: 4,
+    color: '#958475',
   },
 
   memberSince: {
     fontSize: 14,
-    color: '#666',
+    color: '#958475',
     marginBottom: 16,
   },
 
   profileImageContainer: {
     position: 'relative',
-  },
-
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-
-  initialsContainer: {
-    backgroundColor: '#E1E1E1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  initials: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#666',
   },
 
   editOverlay: {
@@ -335,8 +391,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#958475',
-    backgroundColor: '#958475',
+    marginHorizontal: -16,
   },
 
   listItemLeft: {
@@ -353,7 +408,7 @@ const styles = StyleSheet.create({
 
   listItemText: {
     fontSize: 16,
-    color: '#F3F1EB',
+    color: '#958475',
   },
 
   countText: {
@@ -365,13 +420,9 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 
-  textDisabled: {
-    color: '#FFFFFF',
-  },
-
   statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     width: '100%',
     marginTop: 16,
     marginBottom: 24,
@@ -390,6 +441,129 @@ const styles = StyleSheet.create({
 
   statLabel: {
     fontSize: 12,
-    color: '#666',
+  },
+
+  signOutContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    alignItems: 'center',
+  },
+
+  signOutButton: {
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    minWidth: 120,
+    alignItems: 'center',
+  },
+
+  signOutText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+
+  goalContainer: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  
+  goalHeader: {
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+
+  goalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+
+  goalSubtitle: {
+    fontSize: 14,
+    opacity: 0.8,
+    textAlign: 'center',
+    maxWidth: '80%',
+  },
+
+  radioGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+  },
+
+  radioButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+
+  radioText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  initialsContainer: {
+    backgroundColor: '#F3F1EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  fixedHeader: {
+    position: 'absolute',
+    top: 50,
+    right: 16,
+    zIndex: 1000,
+  },
+
+  menuButton: {
+    padding: 8,
+    borderRadius: 20,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+
+  dropdown: {
+    position: 'absolute',
+    top: 90,
+    right: 16,
+    borderRadius: 8,
+    padding: 8,
+    minWidth: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 4,
+    gap: 12,
+  },
+
+  menuItemPressed: {
+    opacity: 0.7,
+  },
+
+  menuItemText: {
+    fontSize: 16,
   },
 });
