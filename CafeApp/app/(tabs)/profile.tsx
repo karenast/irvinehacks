@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
 
   headerContainer: {
-    height: 200,pp
+    height: 200,
     justifyContent: 'center',
     alignItems: 'center',
   },
