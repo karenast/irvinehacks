@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { auth } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
 import { router } from 'expo-router'
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 
 const index = () => {
@@ -20,16 +21,40 @@ const index = () => {
     }
   }
 
+  // const signUp = async () => {
+  //   try {
+  //     const user = await createUserWithEmailAndPassword(auth, email, password)
+  //     if (user) router.replace('/(tabs)');
+  //   } catch (error: any) {
+  //     console.log(error)
+  //     alert('Sign in failed: ' + error.message);
+  //   }
+  // }
+
   const signUp = async () => {
     try {
-      const user = await createUserWithEmailAndPassword(auth, email, password)
+      // Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Initialize Firestore
+      const db = getFirestore(); // Get Firestore instance
+
+      // Add additional user details to Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        username: email.split('@')[0], // Example: using the email prefix as the username
+        createdAt: new Date(),
+      });
+
+      // Navigate to the main screen after successful sign-up
       if (user) router.replace('/(tabs)');
     } catch (error: any) {
-      console.log(error)
-      alert('Sign in failed: ' + error.message);
+      console.log(error);
+      alert('Sign up failed: ' + error.message);
     }
-  }
-
+  };
+  
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Login</Text>
