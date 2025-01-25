@@ -1,11 +1,13 @@
+import { Image, StyleSheet, Platform, View, Pressable } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { router } from 'expo-router';
-import { Image, StyleSheet, Platform } from 'react-native';
 import { useState } from 'react';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { GlobalDropdown } from '@/components/GlobalDropdown';
 import {MaterialIcons} from '@expo/vector-icons';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { AddVisitModal } from '@/components/AddVisitModal';
@@ -19,6 +21,14 @@ export default function HomeScreen() {
     // TODO: Implement the logic to save the visit
     console.log('Rating:', rating, 'Notes:', notes);
   };
+
+  // State for controlling menu visibility
+  const [showMenu, setShowMenu] = useState(false);
+  
+  // Get color scheme and set colors based on dark/light mode
+  const isDark = useColorScheme() === 'dark';
+  const textColor = isDark ? '#F3F1EB' : '#958475';
+  const backgroundColor = isDark ? '#958475' : '#F3F1EB';
 
   return (
     <ParallaxScrollView
@@ -97,5 +107,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+  },
+  menuButton: {
+    padding: 8,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

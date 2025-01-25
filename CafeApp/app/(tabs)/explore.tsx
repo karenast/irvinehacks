@@ -13,6 +13,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 
+
 export default function TabTwoScreen() {
   const [activeTab, setActiveTab] = useState('cafes');
   const [location, setLocation] = useState('');
