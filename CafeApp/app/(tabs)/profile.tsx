@@ -1,6 +1,9 @@
-import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal } from 'react-native';
+import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal, TextInput } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { router } from 'expo-router';
 //import { RadioButton } from 'react-native-paper'; 
 
 import { Collapsible } from '@/components/Collapsible';
@@ -8,9 +11,12 @@ import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+//import { IconSymbol } from '@/components/ui/IconSymbol';
 import { MaterialIcons } from '@expo/vector-icons';
-import { GlobalDropdown } from '@/components/GlobalDropdown';
+
+type RootStackParamList = {
+  Lists: { initialTab: 'Been' | 'Want to Try' | 'Recs' };
+};
 
 const getInitials = (name: string) => {
   return name
@@ -22,11 +28,14 @@ const getInitials = (name: string) => {
 };
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [friendsCount, setFriendsCount] = useState(0);
   const [goal, setGoal] = useState('20');
   const [showMenu, setShowMenu] = useState(false);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customGoal, setCustomGoal] = useState('');
 
   const isDark = colorScheme === 'dark';
   const textColor = isDark ? '#F3F1EB' : '#958475';
@@ -55,9 +64,6 @@ export default function ProfileScreen() {
 
       if (!result.canceled) {
         setProfileImage(result.assets[0].uri);
-        // Here you would typically upload the image to your backend
-        // Example:
-        // await uploadImageToServer(result.assets[0].uri);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to pick image');
@@ -81,6 +87,20 @@ export default function ProfileScreen() {
       onPress: () => Alert.alert('Report', 'Report feature coming soon!')
     }
   ];
+
+  const handleCustomGoal = () => {
+    if (customGoal) {
+      setGoal(customGoal);
+      setShowCustomInput(false);
+    }
+  };
+
+  const navigateToList = (filter: string) => {
+    router.push({
+      pathname: '/list',
+      params: { filter }
+    });
+  };
 
   return (
     <>
@@ -171,7 +191,7 @@ export default function ProfileScreen() {
               { backgroundColor: sideColor },
               pressed && styles.pressed
             ]}
-            onPress={() => Alert.alert('Been', 'Show visited cafes')}
+            onPress={() => navigateToList('been')}
           >
             <ThemedView style={styles.listItemLeft}>
               <MaterialIcons name="local-cafe" size={24} color={textColor} />
@@ -189,7 +209,7 @@ export default function ProfileScreen() {
               { backgroundColor: sideColor },
               pressed && styles.pressed
             ]}
-            onPress={() => Alert.alert('Want to Try', 'Show wishlist cafes')}
+            onPress={() => navigateToList('wantToTry')}
           >
             <ThemedView style={styles.listItemLeft}>
               <MaterialIcons name="location-on" size={24} color={textColor} />
@@ -207,7 +227,7 @@ export default function ProfileScreen() {
               { backgroundColor: sideColor },
               pressed && styles.pressed
             ]}
-            onPress={() => Alert.alert('Recs for You', 'Show recommendations')}
+            onPress={() => navigateToList('recommendations')}
           >
             <ThemedView style={styles.listItemLeft}>
               <MaterialIcons name="storefront" size={24} color={textColor} />
@@ -229,7 +249,7 @@ export default function ProfileScreen() {
           </View>
           
           <View style={styles.radioGroup}>
-            {['20', '50', '100', 'Customize'].map((value) => (
+            {['20', '50', '100'].map((value) => (
               <Pressable
                 key={value}
                 style={[
@@ -240,11 +260,51 @@ export default function ProfileScreen() {
                     opacity: goal === value ? 1 : 0.7
                   }
                 ]}
-                onPress={() => setGoal(value)}
+                onPress={() => {
+                  setGoal(value);
+                  setShowCustomInput(false);
+                }}
               >
                 <ThemedText style={[styles.radioText, { color: textColor }]}>{value}</ThemedText>
               </Pressable>
             ))}
+            {showCustomInput ? (
+              <TextInput
+                style={[
+                  styles.radioButton,
+                  styles.customizeInput,
+                  { 
+                    backgroundColor: sideColor,
+                    borderColor: textColor,
+                    color: textColor
+                  }
+                ]}
+                placeholder="Enter"
+                placeholderTextColor={textColor}
+                keyboardType="numeric"
+                value={customGoal}
+                onChangeText={setCustomGoal}
+                onSubmitEditing={handleCustomGoal}
+                autoFocus
+                onBlur={() => {
+                  if (!customGoal) setShowCustomInput(false);
+                }}
+              />
+            ) : (
+              <Pressable
+                style={[
+                  styles.radioButton,
+                  { 
+                    backgroundColor: sideColor,
+                    borderColor: textColor,
+                    opacity: 0.7
+                  }
+                ]}
+                onPress={() => setShowCustomInput(true)}
+              >
+                <ThemedText style={[styles.radioText, { color: textColor }]}>Customize</ThemedText>
+              </Pressable>
+            )}
           </View>
         </ThemedView>
 
@@ -277,12 +337,6 @@ export default function ProfileScreen() {
           </Pressable>
         </ThemedView>
       </ParallaxScrollView>
-      <GlobalDropdown 
-        visible={showMenu}
-        onClose={() => setShowMenu(false)}
-        textColor={textColor}
-        backgroundColor={backgroundColor}
-      />
     </>
   );
 }
@@ -565,5 +619,13 @@ const styles = StyleSheet.create({
 
   menuItemText: {
     fontSize: 16,
+  },
+
+  customizeInput: {
+    minWidth: 80,
+    textAlign: 'center',
+    padding: 8,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

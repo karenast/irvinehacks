@@ -1,6 +1,8 @@
-import { Image, StyleSheet, Platform, FlatList, View, Pressable, TextInput, Modal } from 'react-native';
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { StyleSheet, Platform, FlatList, View, Pressable, TextInput, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
+import { Tabs } from 'expo-router';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -16,10 +18,12 @@ interface Cafe {
   distance: string;
   nearby: string;
   isOpen: boolean;
+  hasVisited: boolean;
+  isRecommended: boolean;
 }
 
 // Sample cafe data
-const cafes = [
+const cafes: Cafe[] = [
   {
     id: '1',
     name: 'Cafe Delight',
@@ -27,7 +31,9 @@ const cafes = [
     rating: 4.5,
     distance: 'LA',
     nearby: 'Nearby',
-    isOpen: true
+    isOpen: true,
+    hasVisited: true,
+    isRecommended: false
   },
   {
     id: '3',
@@ -36,29 +42,35 @@ const cafes = [
     rating: 4.7,
     distance: 'Fresno',
     nearby: 'Nearby',
-    isOpen: true
+    isOpen: true,
+    hasVisited: false,
+    isRecommended: false
   },
-  {
-    id: '4',
-    name: 'Tea Garden',
-    ocassion: 'Casual Hangout',
-    rating: 4.4,
-    distance: 'LA',
-    nearby: 'Nearby',
-    isOpen: false
-  },
-  {
-    id: '5',
-    name: 'The Daily Grind',
-    ocassion: 'Quick Coffee',
-    rating: 4.3,
-    distance: 'Irvine',
-    nearby: 'Nearby',
-    isOpen: true
-  }
 ];
 
+// Add this before the ListScreen component
+export const useFilteredCafes = (cafesList: Cafe[], filter: string | undefined) => {
+  return useMemo(() => {
+    if (!filter) return cafesList;
+    
+    return cafesList.filter(cafe => {
+      switch (filter) {
+        case 'been':
+          return cafe.hasVisited === true;
+        case 'wantToTry':
+          return cafe.hasVisited !== true;
+        case 'recommendations':
+          return cafe.isRecommended === true;
+        default:
+          return true;
+      }
+    });
+  }, [cafesList, filter]);
+};
+
 export default function ListScreen() {
+  const { filter } = useLocalSearchParams();
+  const filterValue = Array.isArray(filter) ? filter[0] : filter;
   // State to hold our cafes list
   const [cafesList, setCafesList] = useState(cafes);
   const [showInputModal, setShowInputModal] = useState(false);
@@ -67,6 +79,24 @@ export default function ListScreen() {
   const [newNearbyLocation, setNewNearbyLocation] = useState('');
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Use the custom hook here
+  const filteredCafesList = useFilteredCafes(cafesList, filterValue);
+
+  // Function to get the title based on filter
+  const getTitle = () => {
+    switch (filterValue) {
+      case 'been':
+        return 'Places I\'ve Been';
+      case 'wantToTry':
+        return 'Want to Try';
+      case 'recommendations':
+        return 'Recommendations';
+      default:
+        return 'Cafes';
+    }
+  };
+
   // Function to add a new cafe
   const handleSaveCafe = () => {
     if (newCafeName && newOccasion && newNearbyLocation) {
@@ -77,7 +107,9 @@ export default function ListScreen() {
         rating: 5.0,
         distance: 'Location',
         nearby: newNearbyLocation,
-        isOpen: true
+        isOpen: true,
+        hasVisited: false,
+        isRecommended: false
       };
       setCafesList([...cafesList, newCafe]);
       
@@ -136,6 +168,41 @@ export default function ListScreen() {
     </Pressable>
   );
 
+  // Add this component inside ListScreen but before the return statement
+  const ListTabs = () => {
+    const tabs = [
+      { key: 'been', label: 'Been' },
+      { key: 'wantToTry', label: 'Want to Try' },
+      { key: 'recommendations', label: 'Recs' },
+    ];
+
+    return (
+      <View style={styles.tabContainer}>
+        {tabs.map((tab) => (
+          <Pressable
+            key={tab.key}
+            style={({ pressed }) => [
+              styles.tab,
+              filterValue === tab.key && styles.activeTab,
+              pressed && styles.pressed
+            ]}
+            onPress={() => router.push({
+              pathname: '/list',
+              params: { filter: tab.key }
+            })}
+          >
+            <ThemedText style={[
+              styles.tabText,
+              filterValue === tab.key && styles.activeTabText
+            ]}>
+              {tab.label}
+            </ThemedText>
+          </Pressable>
+        ))}
+      </View>
+    );
+  };
+
   return (
     <>
       <ParallaxScrollView
@@ -144,13 +211,13 @@ export default function ListScreen() {
         headerImage={
           <View style={styles.headerContainer}>
             <ThemedText type="title" style={styles.headerTitle}>
-              Cafes
+              {getTitle()}
             </ThemedText>
           </View>
         }
       >
         <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title">Want to Try</ThemedText>
+          <ThemedText type="title">{getTitle()}</ThemedText>
           <HelloWave />
         </ThemedView>
         <ThemedView style={styles.addButtonContainer}>
@@ -167,8 +234,9 @@ export default function ListScreen() {
             </View>
           </Pressable>
         </ThemedView>
+        <ListTabs />
         <FlatList
-          data={cafesList}
+          data={filteredCafesList}
           renderItem={renderCafesContent}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContainer}
@@ -469,5 +537,27 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 16,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 8,
+  },
+  tab: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#F3F1EB',
+  },
+  activeTab: {
+    backgroundColor: '#958475',
+  },
+  tabText: {
+    color: '#958475',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#F3F1EB',
   },
 });
