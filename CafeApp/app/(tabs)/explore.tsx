@@ -1,4 +1,5 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { StyleSheet, Image, Platform, TextInput } from 'react-native';
+import { useState } from 'react';
 
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
@@ -6,91 +7,107 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Colors } from '@/constants/Colors';
+import Feather from '@expo/vector-icons/build/Feather';
+import Entypo from '@expo/vector-icons/Entypo';
+
 
 export default function TabTwoScreen() {
+  const [activeTab, setActiveTab] = useState('cafes');
+
+  const renderCafesContent = () => (
+    <>
+      <ThemedView style={[styles.searchContainer, { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.light.background, borderRadius: 10, padding: 10, marginBottom: 14, borderWidth: 1, borderColor: '#D9D2CD' }]}>
+        <Entypo name="magnifying-glass" size={24} color="#958475" />
+        <TextInput 
+          style={{ flex: 1, marginLeft: 18, fontSize: 15, fontWeight: '500' }}
+          placeholder="Search cafe"
+          placeholderTextColor="#958475"
+          onSubmitEditing={(event) => {
+            const searchTerm = event.nativeEvent.text;
+            // Handle search here
+            console.log('Searching for:', searchTerm);
+          }}
+          returnKeyType="search"
+        />
+      </ThemedView>
+      <ThemedView style={[styles.searchContainer, {flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.light.background, borderRadius: 10, padding: 10, marginBottom: 16, borderWidth: 1, borderColor: '#D9D2CD'}]}>
+        <Feather name="map-pin" size={24} color='#958475' />
+        <TextInput 
+          style={{ flex: 1, marginLeft: 18, fontSize: 15, fontWeight: '500' }}
+          placeholder="City"
+          placeholderTextColor="#958475"
+          onSubmitEditing={(event) => {
+            const searchTerm = event.nativeEvent.text;
+            // Handle search here
+            console.log('Location is:', searchTerm);
+          }}
+          returnKeyType="search"
+        />
+      </ThemedView>
+      <ThemedText style={{fontSize: 16, fontWeight: 'bold', marginBottom: 16}} >Recents</ThemedText>
+      <ThemedView style={{flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.light.background, borderRadius: 10, padding: 10, marginBottom: 16, borderWidth: 1, borderColor: '#D9D2CD'}}>
+        <ThemedText style={{ flex: 1, marginLeft: 8, fontSize: 16, color: '#958475' }}>
+          No recent cafes. Try searching for a cafe!
+        </ThemedText>
+      </ThemedView>
+      <ThemedText style={{fontSize: 16, fontWeight: 'bold', marginBottom: 16}} >Places you may have been to</ThemedText>
+      <ThemedView style={{flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.light.background, borderRadius: 10, padding: 10, marginBottom: 16, borderWidth: 1, borderColor: '#D9D2CD'}}>
+      </ThemedView>
+    </>
+  );
+
+  const renderFriendsContent = () => (
+    <>
+      <ThemedView style={[styles.searchContainer, { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.light.background, borderRadius: 10, padding: 10, marginBottom: 14, borderWidth: 1, borderColor: '#D9D2CD' }]}>
+        <Entypo name="magnifying-glass" size={24} color="#958475" />
+        <TextInput 
+          style={{ flex: 1, marginLeft: 18, fontSize: 15, fontWeight: '500' }}
+          placeholder="Search name"
+          placeholderTextColor="#958475"
+          onSubmitEditing={(event) => {
+            const searchTerm = event.nativeEvent.text;
+            console.log('Searching for friend:', searchTerm);
+          }}
+          returnKeyType="search"
+        />
+      </ThemedView>
+      <ThemedText style={{fontSize: 16, fontWeight: 'bold', marginBottom: 16}}>Your Friends</ThemedText>
+      <ThemedView style={{flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.light.background, borderRadius: 10, padding: 10, marginBottom: 16, borderWidth: 1, borderColor: '#D9D2CD'}}>
+        <ThemedText style={{ flex: 1, marginLeft: 8, fontSize: 16, color: '#958475' }}>
+          No friends added yet 🥲
+        </ThemedText>
+      </ThemedView>
+    </>
+  );
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      headerBackgroundColor={{ light: '#CCBDB3', dark: '#353636' }}
+      headerHeight={150}
       headerImage={
         <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
+          size={210}
+          color='#958475'
+          name="cup.and.saucer"
           style={styles.headerImage}
         />
       }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+      <ThemedView style={styles.contentContainer}>
+        <ThemedView style={styles.tabContainer}>
+          <ThemedView 
+            style={[styles.tab, activeTab === 'cafes' && styles.activeTab]}
+            onTouchEnd={() => setActiveTab('cafes')}>
+            <ThemedText style={[styles.tabText, activeTab === 'cafes' && styles.activeTabText]}>Cafes</ThemedText>
+          </ThemedView>
+          <ThemedView 
+            style={[styles.tab, activeTab === 'friends' && styles.activeTab]}
+            onTouchEnd={() => setActiveTab('friends')}>
+            <ThemedText style={[styles.tabText, activeTab === 'friends' && styles.activeTabText]}>Friends</ThemedText>
+          </ThemedView>
+        </ThemedView>
+        {activeTab === 'cafes' ? renderCafesContent() : renderFriendsContent()}
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
     </ParallaxScrollView>
   );
 }
@@ -98,12 +115,46 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   headerImage: {
     color: '#808080',
-    bottom: -90,
+    bottom: -65,
     left: -35,
     position: 'absolute',
   },
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.background,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 16,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    marginTop: -12,
+    marginHorizontal: -16,
+  },
+  tab: {
+    flex: 1,
+    padding: 8,
+    alignItems: 'center',
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#958475',
+  },
+  tabText: {
+    fontSize: 16,
+    color: '#958475',
+    fontWeight: '600',
+  },
+  activeTabText: {
+    fontWeight: '700',
+  },
+  contentContainer: {
+    marginHorizontal: -16, // Counteracts ParallaxScrollView's padding
   },
 });
