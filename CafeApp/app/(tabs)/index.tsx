@@ -89,7 +89,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     backgroundColor: 'transparent',
@@ -136,3 +137,30 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
+
+// import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, View } from 'react-native';
+// import React, { useState } from 'react';
+// import { auth } from '../../FirebaseConfig';
+// import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from 'firebase/auth';
+// import { router } from 'expo-router';
+// import { getFirestore, doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+
+// import MapView from 'react-native-maps';
+
+// export default function App() {
+//   return (
+//     <View style={styles.container}>
+//       <MapView style={styles.map} />
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//   },
+//   map: {
+//     width: '70%',
+//     height: '70%',
+//   },
+// });
