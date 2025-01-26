@@ -51,6 +51,27 @@ export default function ProfileScreen() {
     fetchUsername();
   }, []);
 
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (auth.currentUser) {
+        const fetchedUsername = await getUsername(auth.currentUser.uid);
+        setUsername(fetchedUsername ?? '');
+      }
+    };
+  
+    // Add authentication state listener
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        router.replace('/'); // Redirect to sign-in page
+      }
+    });
+  
+    fetchUsername();
+  
+    // Cleanup the listener on component unmount
+    return () => unsubscribe();
+  }, []);
+
   const [newUsername, setNewUsername] = useState('');
   const [isEditingUsername, setIsEditingUsername] = useState(false);
 
@@ -365,6 +386,7 @@ export default function ProfileScreen() {
                 style: 'destructive',
                 onPress: () => {
                   // Add sign out logic here
+                  auth.signOut();
                   Alert.alert('Signed Out', 'You have been signed out successfully');
                 },
               },
