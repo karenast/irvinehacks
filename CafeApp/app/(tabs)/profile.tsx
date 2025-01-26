@@ -173,7 +173,7 @@ export default function ProfileScreen() {
               pressed && styles.pressed
             ]}
             // onPress={() => Alert.alert('Been', 'Show visited cafes')}
-            onPress={() => router.push('/been')}
+            onPress={() => router.push('/(tabs)/been')}
             
           >
             <ThemedView style={styles.listItemLeft}>
