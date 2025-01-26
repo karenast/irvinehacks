@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Platform } from 'react-native';
 import { useState } from 'react';
+import axios from 'axios';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -7,13 +8,27 @@ import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { AddVisitModal } from '@/components/AddVisitModal';
+import { postReview, hardcodedCafeId } from '../(tabs)/review';
 
+const currentIcon = "add-circle-outline";
 export default function CafeScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [isSubmitted, setIsSubmitted] = useState(false); // State to track if the review is submitted
+  const checkUserReview = async (cafeId: string, userId: string) => {
+    try {
+      const response = await axios.get(`/api/reviews?cafeId=${cafeId}&userId=${userId}`);
+      return response.data.length > 0; // Return true if the user has reviewed the cafe
+    } catch (error) {
+      console.error('Error checking user review:', error);
+      throw error;
+    }
+  };
+  
   const handleAddVisit = (rating: number, notes: string) => {
     // TODO: Implement the logic to save the visit
     console.log('Rating:', rating, 'Notes:', notes);
+    postReview(hardcodedCafeId, rating, notes);
+    setIsSubmitted(true); // Set the submitted state to true
   };
 
   return (
@@ -28,12 +43,16 @@ export default function CafeScreen() {
           <ThemedText style={[styles.overlayTitle, { fontSize: 33, fontWeight: '800', marginBottom: -10 }]} type='title'>Test Cafe</ThemedText>
           <ThemedView style={styles.actionButtons}>
             <ThemedView style={styles.transparentButton}>
-              <MaterialIcons 
-                name="add-circle-outline" 
-                size={42} 
-                color="#958475" 
-                onPress={() => setIsModalVisible(true)} 
-              />
+              {isSubmitted ? (
+                <MaterialIcons name='check-circle' size={42} color="#958475" /> // Show check icon if submitted
+              ) : (
+                <MaterialIcons 
+                  name="add-circle-outline" 
+                  size={42} 
+                  color="#958475" 
+                  onPress={() => setIsModalVisible(true)} 
+                />
+              )}
             </ThemedView>
             <ThemedView style={styles.transparentButton}>
               <MaterialIcons name="bookmark-border" size={42} color="#958475" onPress={() => console.log('Bookmark cafe')} />
@@ -57,7 +76,7 @@ export default function CafeScreen() {
       <AddVisitModal
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
-        onSubmit={handleAddVisit}
+        onSubmit={handleAddVisit}        
       />
     </ScrollView>
   );
@@ -129,4 +148,4 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
   },
-}); 
+});

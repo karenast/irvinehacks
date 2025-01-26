@@ -1,4 +1,4 @@
-import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth } from '../FirebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from 'firebase/auth';
@@ -79,10 +79,14 @@ const Index = () => {
   // };
 
   return (
-    <SafeAreaView style={styles.container} > 
+    <ThemedView style={styles.container} > 
+      <Image
+              source={require('@/assets/images/sleep.png')}
+              style={styles.reactLogo}
+              resizeMode="contain"
+            />
       <ThemedView style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
             <ThemedText style={{fontSize: 19, fontWeight: 'bold'}}>Welcome to Zot n Sip!</ThemedText>
-            <HelloWave />
       </ThemedView>
       <TextInput
         style={styles.textInput}
@@ -100,13 +104,14 @@ const Index = () => {
       <TouchableOpacity style={styles.button} onPress={signIn}>
         <Text style={styles.text}>Login</Text>
       </TouchableOpacity>
+      <Text style={{color: '#958475', fontSize: 15, fontWeight: '600', marginTop: 5, marginBottom:-5}}>New here?</Text>
       <TouchableOpacity style={styles.button} onPress={signUp}>
         <Text style={styles.text}>Make Account</Text>
       </TouchableOpacity>
       {/* <TouchableOpacity style={styles.button} onPress={postReview}>
         <Text style={styles.text}>Post Review</Text> */}
       {/* </TouchableOpacity> */}
-    </SafeAreaView>
+    </ThemedView>
   );
 };
 
@@ -115,7 +120,8 @@ export default Index;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    marginTop: 50,
     alignItems: 'center',
     backgroundColor: '#F3F1EB',
   },
@@ -127,12 +133,12 @@ const styles = StyleSheet.create({
   },
   textInput: {
     height: 50,
-    width: '90%',
+    width: '80%',
     backgroundColor: '#F3F1EB',
     borderColor: '#D9D2CD',
     borderWidth: 2,
     borderRadius: 15,
-    marginVertical: 15,
+    marginVertical: 10,
     paddingHorizontal: 25,
     fontSize: 16,
     color: '#958475',
@@ -143,21 +149,27 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   button: {
-    width: '90%',
-    marginVertical: 15,
-    backgroundColor: '#5C6BC0',
-    padding: 20,
-    borderRadius: 15,
+    width: '60%',
+    marginVertical: 10,
+    backgroundColor: '#958475',
+    padding: 15,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#5C6BC0',
+    shadowColor: '#958475',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
     elevation: 5,
   },
+  reactLogo: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+    marginTop: 20,
+  },
   text: {
-    color: '#FFFFFF',
+    color: '#F3F1EB',
     fontSize: 18,
     fontWeight: '600',
   },
