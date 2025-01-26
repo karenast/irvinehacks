@@ -152,15 +152,15 @@ export default function ProfileScreen() {
       >
         <ThemedView style={[styles.titleContainer, { backgroundColor }]}>
           <ThemedView style={styles.profileInfo}>
-                <>
-                  <ThemedText style={[styles.username, { color: textColor }]}>{username}</ThemedText>
-                  <Pressable 
-                    onPress={() => setIsEditingUsername(true)}
-                    style={({ pressed }) => [styles.editIcon, pressed && styles.pressed]}
-                  >
-                    <MaterialIcons name="edit" size={30} color={textColor} />
-                  </Pressable> 
-                </>
+            <View style={styles.usernameContainer}>
+              <ThemedText style={[styles.username, { color: textColor }]}>{username}</ThemedText>
+              <Pressable 
+                onPress={() => setIsEditingUsername(true)}
+                style={({ pressed }) => [styles.editIcon, pressed && styles.pressed]}
+              >
+                <MaterialIcons name="edit" size={20} color={textColor} />
+              </Pressable>
+            </View>
             <ThemedText style={[styles.memberSince, { color: textColor }]}>Member since January 2024</ThemedText>
             <ThemedView style={styles.buttonContainer}>
               <Pressable 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, Platform, FlatList, View, Pressable, TextInput, Modal } from 'react-native';
+import { StyleSheet, Platform, FlatList, View, Pressable, TextInput, Modal, useColorScheme } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Tabs } from 'expo-router';
@@ -71,6 +71,11 @@ export const useFilteredCafes = (cafesList: Cafe[], filter: string | undefined) 
 export default function ListScreen() {
   const { filter } = useLocalSearchParams();
   const filterValue = Array.isArray(filter) ? filter[0] : filter;
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const textColor = isDark ? '#F3F1EB' : '#958475';
+  const backgroundColor = isDark ? '#958475' : '#F3F1EB';
+  const color = isDark ? '#958475' : '#F3F1EB';
   // State to hold our cafes list
   const [cafesList, setCafesList] = useState(cafes);
   const [showInputModal, setShowInputModal] = useState(false);
@@ -139,7 +144,7 @@ export default function ListScreen() {
     >
       <View style={styles.restaurantInfo}>
         <View style={styles.headerRow}>
-          <ThemedText type="subtitle">{item.name}</ThemedText>
+          <ThemedText type="subtitle" style={{ color: '#958475' }}>{item.name}</ThemedText>
           <Pressable
             onPress={() => deleteCafe(item.id)}
             style={({ pressed }) => [
@@ -147,20 +152,20 @@ export default function ListScreen() {
               pressed && styles.pressed
             ]}
           >
-            <MaterialIcons name="delete" size={20} color="#3D0C02" />
+            <MaterialIcons name="delete" size={20} color="#958475" />
           </Pressable>
         </View>
-        <ThemedText>{item.ocassion}</ThemedText>
+        <ThemedText style={{ color: '#958475' }}>{item.ocassion}</ThemedText>
         <View style={styles.restaurantDetails}>
           <MaterialIcons 
             name="local-cafe"
             size={16} 
-            color="#3D2B1F" 
+            color="#958475" 
           />
-          <ThemedText>{item.rating}</ThemedText>
-          <ThemedText>•</ThemedText>
-          <ThemedText>{item.distance}</ThemedText>
-          <ThemedText style={item.isOpen ? styles.open : styles.closed}>
+          <ThemedText style={{ color: '#958475' }}>{item.rating}</ThemedText>
+          <ThemedText style={{ color: '#958475' }}>•</ThemedText>
+          <ThemedText style={{ color: '#958475' }}>{item.distance}</ThemedText>
+          <ThemedText style={[item.isOpen ? styles.open : styles.closed, { color: '#958475' }]}>
             {item.isOpen ? 'Open' : 'Closed'}
           </ThemedText>
         </View>
@@ -184,7 +189,8 @@ export default function ListScreen() {
             style={({ pressed }) => [
               styles.tab,
               filterValue === tab.key && styles.activeTab,
-              pressed && styles.pressed
+              pressed && styles.pressed,
+              { backgroundColor: isDark ? '#F3F1EB' : '#958475' , color: isDark ? '#958475' : '#F3F1EB'} // Change background color based on mode
             ]}
             onPress={() => router.push({
               pathname: '/list',
@@ -193,7 +199,8 @@ export default function ListScreen() {
           >
             <ThemedText style={[
               styles.tabText,
-              filterValue === tab.key && styles.activeTabText
+              filterValue === tab.key && styles.activeTabText,
+              { color: isDark ? '#958475' : '#F3F1EB' }
             ]}>
               {tab.label}
             </ThemedText>
@@ -235,28 +242,31 @@ export default function ListScreen() {
         animationType="slide"
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor }]}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: textColor }]}
               placeholder="Cafe Name"
+              placeholderTextColor={textColor}
               value={newCafeName}
               onChangeText={setNewCafeName}
             />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: textColor }]}
               placeholder="Occasion"
+              placeholderTextColor={textColor}
               value={newOccasion}
               onChangeText={setNewOccasion}
             />
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: textColor }]}
               placeholder="Location"
+              placeholderTextColor={textColor}
               value={newNearbyLocation}
               onChangeText={setNewNearbyLocation}
             />
             <View style={styles.buttonContainer}>
               <Pressable
-                style={[styles.button, styles.cancelButton]}
+                style={[styles.button, styles.cancelButton, { backgroundColor }]}
                 onPress={() => {
                   setShowInputModal(false);
                   setNewCafeName('');
@@ -267,7 +277,7 @@ export default function ListScreen() {
                 <ThemedText style={styles.buttonText}>Cancel</ThemedText>
               </Pressable>
               <Pressable
-                style={[styles.button, styles.addButton]}
+                style={[styles.button, styles.addButton, { backgroundColor }]}
                 onPress={handleSaveCafe}
               >
                 <ThemedText style={styles.buttonText}>Add</ThemedText>
@@ -283,7 +293,7 @@ export default function ListScreen() {
         animationType="slide"
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor }]}>
             <View style={styles.detailsHeader}>
               <ThemedText type="title" style={styles.detailsTitle}>
                 {selectedCafe?.name}
@@ -298,34 +308,34 @@ export default function ListScreen() {
                   setSelectedCafe(null);
                 }}
               >
-                <MaterialIcons name="close" size={24} color="#3D0C02" />
+                <MaterialIcons name="close" size={24} color={textColor} />
               </Pressable>
             </View>
             
             <View style={styles.detailsContent}>
               <View style={styles.detailRow}>
-                <MaterialIcons name="event" size={20} color="#3D0C02" />
+                <MaterialIcons name="event" size={20} color={textColor} />
                 <ThemedText style={styles.detailText}>
                   Occasion: {selectedCafe?.ocassion}
                 </ThemedText>
               </View>
               
               <View style={styles.detailRow}>
-                <MaterialIcons name="local-cafe" size={20} color="#3D0C02" />
+                <MaterialIcons name="local-cafe" size={20} color={textColor} />
                 <ThemedText style={styles.detailText}>
                   Rating: {selectedCafe?.rating}
                 </ThemedText>
               </View>
               
               <View style={styles.detailRow}>
-                <MaterialIcons name="location-on" size={20} color="#3D0C02" />
+                <MaterialIcons name="location-on" size={20} color={textColor} />
                 <ThemedText style={styles.detailText}>
                   Location: {selectedCafe?.distance}
                 </ThemedText>
               </View>
               
               <View style={styles.detailRow}>
-                <MaterialIcons name="place" size={20} color="#3D0C02" />
+                <MaterialIcons name="place" size={20} color={textColor} />
                 <ThemedText style={styles.detailText}>
                   Nearby: {selectedCafe?.nearby}
                 </ThemedText>

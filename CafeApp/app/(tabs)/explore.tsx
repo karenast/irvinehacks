@@ -127,7 +127,7 @@ export default function TabTwoScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#CCBDB3', dark: '#353636' }}
+      headerBackgroundColor={{ light: '#CCBDB3', dark: '#A9927d' }}
       headerHeight={150}
       headerImage={
         <ThemedView style={{ height: 100, width: '100%', position: 'relative', backgroundColor: 'transparent' }}>
