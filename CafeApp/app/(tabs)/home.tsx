@@ -47,10 +47,12 @@ export default function HomeScreen() {
         </ThemedView>
       }>
       <ThemedView style={styles.sectionContainer}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText style={{fontSize: 16, fontWeight: 'bold'}}>Welcome, {user}!</ThemedText>
-          <HelloWave />
-        </ThemedView>
+        <ThemedView style={styles.sectionContainer}>
+          <ThemedView style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+            <ThemedText style={{fontSize: 16, fontWeight: 'bold'}}>Welcome, {user}!</ThemedText>
+            <HelloWave />
+          </ThemedView>
+        </ThemedView> 
         <ThemedView style={styles.feedContainer}>
           <ThemedText type="subtitle">Map coming soon...</ThemedText>
           <ThemedText>We'll show nearby cafes here with Google Maps integration</ThemedText>
