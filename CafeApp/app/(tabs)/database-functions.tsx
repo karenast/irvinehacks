@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, collection, addDoc, doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 const hardcodedReview = "this is great";
-export const hardcodedCafeId = "ChIJ16OptRTw3IAReW8A9mYTKbg"; // Cafe ID
+export const hardcodedCafeId = "ChIJA0fEtDXc3IAREDMAngyh3lo"; // Cafe ID
 
 export async function getUsername(uid: string): Promise<string> {
   const db = getFirestore();

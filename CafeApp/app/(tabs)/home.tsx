@@ -13,6 +13,7 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { AddVisitModal } from '@/components/AddVisitModal';
 import { getUsername } from '@/app/(tabs)/database-functions';
 import { auth } from '@/FirebaseConfig';
+import { hardcodedCafeId } from '@/app/(tabs)/database-functions';
 
 export default function HomeScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -78,7 +79,7 @@ export default function HomeScreen() {
             style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderWidth: 0.5, borderColor: '#D9D2CD', borderRadius: 4, marginHorizontal: -8, backgroundColor: 'transparent'}} 
           >
             <ThemedView 
-              onTouchEnd={() => router.push('/(modals)/cafe')}
+              onTouchEnd={() => router.push({ pathname: '/(modals)/cafe', params: { id: hardcodedCafeId } }) }
               style={{flex: 1}}>
               <ThemedText style={{fontSize: 16, fontWeight: '600'}}>Test Cafe</ThemedText>
               <ThemedView style={{flexDirection: 'row', gap: 8, marginTop: 4}}>
