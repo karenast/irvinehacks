@@ -52,7 +52,7 @@ export default function TabLayout() {
         <Tabs.Screen
         name="list"
         options={{
-          title: 'List',
+          title: 'Lists',
           tabBarIcon: ({ color }) => <MaterialIcons name="bookmark" size={24} color={color} />,
         }}
       />
