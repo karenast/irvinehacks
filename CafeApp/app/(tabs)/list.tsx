@@ -220,20 +220,6 @@ export default function ListScreen() {
           <ThemedText type="title">{getTitle()}</ThemedText>
           <HelloWave />
         </ThemedView>
-        <ThemedView style={styles.addButtonContainer}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.mainAddButton,
-              pressed && styles.pressed
-            ]}
-            onPress={() => setShowInputModal(true)}
-          >
-            <View style={styles.addButtonContent}>
-              <MaterialIcons name="add" size={24} color="#F2E8D3" />
-              <ThemedText style={styles.addButtonText}>Places to Try!</ThemedText>
-            </View>
-          </Pressable>
-        </ThemedView>
         <ListTabs />
         <FlatList
           data={filteredCafesList}

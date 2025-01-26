@@ -1,11 +1,11 @@
-import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal, TextInput } from 'react-native';
+import React from 'react';
+import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal, TextInput, Button } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useContext, useState , createContext} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { router } from 'expo-router';
 //import { RadioButton } from 'react-native-paper'; 
-
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -36,6 +36,9 @@ export default function ProfileScreen() {
   const [showMenu, setShowMenu] = useState(false);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customGoal, setCustomGoal] = useState('');
+  const [username, setUsername] = useState('username');
+  const [newUsername, setNewUsername] = useState('');
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
 
   const isDark = colorScheme === 'dark';
   const textColor = isDark ? '#F3F1EB' : '#958475';
@@ -102,6 +105,14 @@ export default function ProfileScreen() {
     });
   };
 
+  const handleUsernameChange = () => {
+    if (newUsername) {
+      setUsername(newUsername);
+      setNewUsername('');
+      setIsEditingUsername(false);
+    }
+  };
+
   return (
     <>
       <ParallaxScrollView
@@ -141,7 +152,15 @@ export default function ProfileScreen() {
       >
         <ThemedView style={[styles.titleContainer, { backgroundColor }]}>
           <ThemedView style={styles.profileInfo}>
-            <ThemedText style={[styles.username, { color: textColor }]}>Username</ThemedText>
+                <>
+                  <ThemedText style={[styles.username, { color: textColor }]}>{username}</ThemedText>
+                  <Pressable 
+                    onPress={() => setIsEditingUsername(true)}
+                    style={({ pressed }) => [styles.editIcon, pressed && styles.pressed]}
+                  >
+                    <MaterialIcons name="edit" size={30} color={textColor} />
+                  </Pressable> 
+                </>
             <ThemedText style={[styles.memberSince, { color: textColor }]}>Member since January 2024</ThemedText>
             <ThemedView style={styles.buttonContainer}>
               <Pressable 
@@ -183,7 +202,6 @@ export default function ProfileScreen() {
             </ThemedView>
           </ThemedView>
         </ThemedView>
-
         <ThemedView style={styles.listSection}>
           <Pressable 
             style={({ pressed }) => [
@@ -337,6 +355,27 @@ export default function ProfileScreen() {
           </Pressable>
         </ThemedView>
       </ParallaxScrollView>
+
+      <Modal
+        visible={isEditingUsername}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: backgroundColor }]}>
+            <ThemedText style={[styles.modalTitle, { color: textColor }]}>Edit Username</ThemedText>
+            <TextInput
+              style={[styles.input, { color: textColor, borderColor: textColor }]}
+              placeholder="Enter new username"
+              placeholderTextColor={textColor}
+              value={newUsername}
+              onChangeText={setNewUsername}
+            />
+            <Button title="Save" onPress={handleUsernameChange} />
+            <Button title="Cancel" onPress={() => setIsEditingUsername(false)} />
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -627,5 +666,60 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 14,
     fontWeight: '500',
+  },
+  containers: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  usernameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center', // Center horizontally
+    marginVertical: 16, // Add vertical margin if needed
+  },
+  editIcon: {
+    marginLeft: 8,
+  },
+  usernameText: {
+    fontSize: 16,
+    color: 'black',
+  },
+  usernameInput: {
+    fontSize: 20,
+    color: 'black',
+    borderBottomColor: 'black',
+  },
+  usernameSection: {
+    fontSize: 16,
+    alignItems: 'center',
   },
 });
