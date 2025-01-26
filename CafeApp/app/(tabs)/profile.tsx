@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal, TextInput, Button } from 'react-native';
+import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal, TextInput, Button, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useContext, useState , createContext} from 'react';
 import { useNavigation } from '@react-navigation/native';
@@ -117,7 +117,7 @@ export default function ProfileScreen() {
     <>
       <ParallaxScrollView
         headerBackgroundColor={{ light: '#F3F1EB', dark: '#958475' }}
-        headerHeight={200}
+        headerHeight={100}
         headerImage={
           <View style={styles.headerContainer}>
             <View style={styles.fixedHeader}>
@@ -128,8 +128,12 @@ export default function ProfileScreen() {
                 <MaterialIcons name="menu" size={24} color={textColor} />
               </Pressable>
             </View>
-            <Pressable onPress={pickImage}>
-              <View style={styles.profileImageContainer}>
+          </View>
+        }
+      >
+      <ThemedView style={styles.profileImageContainer}>
+        <Pressable onPress={pickImage}>
+              <View style={styles.profileImageWrapper}>
                 {profileImage ? (
                   <Image 
                     source={{ uri: profileImage }}
@@ -138,38 +142,36 @@ export default function ProfileScreen() {
                 ) : (
                   <View style={[styles.headerProfileImage, styles.initialsContainer]}>
                     <ThemedText style={styles.headerInitials}>
-                      {getInitials("John Doe")}
+                      {getInitials(username)}
                     </ThemedText>
                   </View>
                 )}
-                <View style={styles.editOverlay}>
-                  <MaterialIcons name="photo-camera" size={24} color="#fff" />
-                </View>
               </View>
             </Pressable>
-          </View>
-        }
-      >
+        </ThemedView>  
         <ThemedView style={[styles.titleContainer, { backgroundColor }]}>
           <ThemedView style={styles.profileInfo}>
                 <>
-                  <ThemedText style={[styles.username, { color: textColor }]}>{username}</ThemedText>
-                  <Pressable 
-                    onPress={() => setIsEditingUsername(true)}
-                    style={({ pressed }) => [styles.editIcon, pressed && styles.pressed]}
-                  >
-                    <MaterialIcons name="edit" size={30} color={textColor} />
-                  </Pressable> 
+                  <ThemedView style={styles.usernameContainer}>
+                    <ThemedText style={[styles.username, { color: textColor }]}>{username}</ThemedText>
+                    <Pressable 
+                      onPress={() => setIsEditingUsername(true)}
+                      style={({ pressed }) => [styles.editIconContainer, pressed && styles.pressed]}
+                    >
+                      <MaterialIcons name="edit" size={18} color={textColor} />
+                    </Pressable>
+                  </ThemedView>
                 </>
             <ThemedText style={[styles.memberSince, { color: textColor }]}>Member since January 2024</ThemedText>
             <ThemedView style={styles.buttonContainer}>
-              <Pressable 
+              <Pressable
                 onPress={() => Alert.alert('Edit Profile', 'Edit profile functionality coming soon!')}
                 style={({ pressed }) => [
                   styles.button,
                   { 
                     backgroundColor: sideColor,
-                    borderColor: textColor  // Update border color to match text
+                    borderColor: textColor,  // Update border color to match text
+                    alignContent: 'center',
                   },
                   pressed && styles.pressed
                 ]}
@@ -371,8 +373,12 @@ export default function ProfileScreen() {
               value={newUsername}
               onChangeText={setNewUsername}
             />
-            <Button title="Save" onPress={handleUsernameChange} />
-            <Button title="Cancel" onPress={() => setIsEditingUsername(false)} />
+            <TouchableOpacity onPress={handleUsernameChange} style={styles.editbutton}>
+              <ThemedText style={styles.editbuttonText}>Save</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setIsEditingUsername(false)} style={styles.editbutton}>
+              <ThemedText style={styles.editbuttonText}>Cancel</ThemedText>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -382,25 +388,38 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    justifyContent: 'center',
     flex: 1,
   },
 
   headerContainer: {
-    height: 200,
+    height: 400,
+    resizeMode: 'cover',
     justifyContent: 'center',
     alignItems: 'center',
   },
   
+  profileImageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 0,
+  },
+  
+  profileImageWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   headerProfileImage: {
     width: 150,
     height: 150,
-    borderRadius: 75,
+    borderRadius: 100,
   },
   
   headerInitials: {
-    fontSize: 54,
-    fontWeight: 'bold',
-    color: '#958475',
+    fontSize: 24,
+    color: '#fff',
   },
 
   titleContainer: {
@@ -432,6 +451,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 
+  editbutton: {
+    backgroundColor: '#958475',
+    padding: 10,
+    borderRadius: 30,
+    minWidth: 100,
+    alignItems: 'center',
+    margin: 5,
+  },
+  
+  editbuttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
   pressed: {
     opacity: 0.7,
   },
@@ -446,11 +480,8 @@ const styles = StyleSheet.create({
   },
 
   username: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 12,
-    marginBottom: 4,
-    color: '#958475',
   },
 
   memberSince: {
@@ -459,18 +490,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  profileImageContainer: {
-    position: 'relative',
-  },
-
   editOverlay: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 12,
+    padding: 4,
   },
 
   listSection: {
@@ -605,9 +631,9 @@ const styles = StyleSheet.create({
   },
 
   initialsContainer: {
-    backgroundColor: '#F3F1EB',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#ccc',
   },
 
   fixedHeader: {
@@ -625,6 +651,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   dropdown: {
@@ -694,6 +722,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
+    marginTop: -120
   },
   modalTitle: {
     fontSize: 18,
@@ -703,11 +732,9 @@ const styles = StyleSheet.create({
   usernameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // Center horizontally
-    marginVertical: 16, // Add vertical margin if needed
   },
-  editIcon: {
-    marginLeft: 8,
+  editIconContainer: {
+    marginLeft: 6, // Increase the margin to make the space larger
   },
   usernameText: {
     fontSize: 16,

@@ -22,10 +22,10 @@ export async function postReview(cafe: String = hardcodedCafeId, rating: number,
       });
 
       // Once the review is added, update the corresponding cafe document
-      const cafeDocRef = doc(db, 'Cafes', hardcodedCafeId);
-      await updateDoc(cafeDocRef, {
-        reviews: arrayUnion(reviewDocRef.id), // Append the review document ID to the "reviews" array in the cafe document
-      });
+      // const cafeDocRef = doc(db, 'Cafes', hardcodedCafeId);
+      // await updateDoc(cafeDocRef, {
+      //   reviews: arrayUnion(reviewDocRef.id), // Append the review document ID to the "reviews" array in the cafe document
+      // });
 
       // Now, update the user's document to append the review document ID to the "reviews" array
       const userDocRef = doc(db, 'users', user.uid); // Get the reference to the user's document
