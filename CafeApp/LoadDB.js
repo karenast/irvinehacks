@@ -1,9 +1,10 @@
 const axios = require('axios');
 const { db } = require('./FirebaseConfig.js');
 const { GeoPoint, doc, setDoc, collection } = require('firebase/firestore');
+require('dotenv').config();
 
 // Replace with your API key and Irvine's latitude/longitude
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDRtJNHNbMUoFDvYySqVID-2oh-GUNR6a0';
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_API_KEY;
 const IRVINE_COORDINATES = '33.6846,-117.8265';
 const RADIUS = 250000; // Radius in meters
 const EXCLUDED_CAFE_ID = 'MmzBVRfmenFyh8h9OJER'; // The ID of the cafe that should not be deleted
