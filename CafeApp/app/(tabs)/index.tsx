@@ -42,7 +42,7 @@ export default function HomeScreen() {
             resizeMode="contain"
           />
           <ThemedText style={{fontSize: 25, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, backgroundColor: 'transparent', position: 'absolute', top: 120, left: 90, right: 0}}>
-            CafeApp
+            Zot n Sip!
           </ThemedText>
         </ThemedView>
       }>
