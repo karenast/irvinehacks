@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Platform, View, Pressable, Text } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -11,11 +11,25 @@ import { GlobalDropdown } from '@/components/GlobalDropdown';
 import {MaterialIcons} from '@expo/vector-icons';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { AddVisitModal } from '@/components/AddVisitModal';
-
-const user = 'John';
+import { getUsername } from '@/app/(tabs)/database-functions';
+import { auth } from '@/FirebaseConfig';
+import { hardcodedCafeId } from '@/app/(tabs)/database-functions';
 
 export default function HomeScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (auth.currentUser) {
+        const user = await getUsername(auth.currentUser.uid);
+        setUsername(user);
+      }
+    };
+    fetchUsername();
+  }, []);
+ 
 
   const handleAddVisit = (rating: number, notes: string) => {
     // TODO: Implement the logic to save the visit
@@ -47,10 +61,12 @@ export default function HomeScreen() {
         </ThemedView>
       }>
       <ThemedView style={styles.sectionContainer}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText style={{fontSize: 16, fontWeight: 'bold'}}>Welcome, {user}!</ThemedText>
-          <HelloWave />
-        </ThemedView>
+        <ThemedView style={styles.sectionContainer}>
+          <ThemedView style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
+            <ThemedText style={{fontSize: 16, fontWeight: 'bold'}}>Welcome{username ? ', ' + username : ""}!</ThemedText>
+            <HelloWave />
+          </ThemedView>
+        </ThemedView> 
         <ThemedView style={styles.feedContainer}>
           <ThemedText type="subtitle">Map coming soon...</ThemedText>
           <ThemedText>We'll show nearby cafes here with Google Maps integration</ThemedText>
@@ -63,7 +79,7 @@ export default function HomeScreen() {
             style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderWidth: 0.5, borderColor: '#D9D2CD', borderRadius: 4, marginHorizontal: -8, backgroundColor: 'transparent'}} 
           >
             <ThemedView 
-              onTouchEnd={() => router.push('/(modals)/cafe')}
+              onTouchEnd={() => router.push({ pathname: '/(modals)/cafe', params: { id: hardcodedCafeId } }) }
               style={{flex: 1}}>
               <ThemedText style={{fontSize: 16, fontWeight: '600'}}>Test Cafe</ThemedText>
               <ThemedView style={{flexDirection: 'row', gap: 8, marginTop: 4}}>

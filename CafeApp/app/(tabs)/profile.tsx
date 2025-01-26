@@ -1,17 +1,25 @@
-import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal } from 'react-native';
+import React from 'react';
+import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal, TextInput, Button, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useContext, useState , createContext, useEffect} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { router } from 'expo-router';
 //import { RadioButton } from 'react-native-paper'; 
-
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+//import { IconSymbol } from '@/components/ui/IconSymbol';
 import { MaterialIcons } from '@expo/vector-icons';
-import { GlobalDropdown } from '@/components/GlobalDropdown';
-import { router } from 'expo-router';
+import { auth } from '../../FirebaseConfig';
+import { getUsername, updateUsername } from '@/app/(tabs)/database-functions';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
+type RootStackParamList = {
+  Lists: { initialTab: 'Been' | 'Want to Try' | 'Recs' };
+};
 
 const getInitials = (name: string) => {
   return name
@@ -23,11 +31,28 @@ const getInitials = (name: string) => {
 };
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [friendsCount, setFriendsCount] = useState(0);
   const [goal, setGoal] = useState('20');
   const [showMenu, setShowMenu] = useState(false);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customGoal, setCustomGoal] = useState('');
+  const [username, setUsername] = useState('User');
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (auth.currentUser) {
+        const fetchedUsername = await getUsername(auth.currentUser.uid);
+        setUsername(fetchedUsername ?? '');
+      }
+    };
+    fetchUsername();
+  }, []);
+
+  const [newUsername, setNewUsername] = useState('');
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
 
   const isDark = colorScheme === 'dark';
   const textColor = isDark ? '#F3F1EB' : '#958475';
@@ -56,9 +81,6 @@ export default function ProfileScreen() {
 
       if (!result.canceled) {
         setProfileImage(result.assets[0].uri);
-        // Here you would typically upload the image to your backend
-        // Example:
-        // await uploadImageToServer(result.assets[0].uri);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to pick image');
@@ -83,11 +105,36 @@ export default function ProfileScreen() {
     }
   ];
 
+  const handleCustomGoal = () => {
+    if (customGoal) {
+      setGoal(customGoal);
+      setShowCustomInput(false);
+    }
+  };
+
+  const navigateToList = (filter: string) => {
+    router.push({
+      pathname: '/list',
+      params: { filter }
+    });
+  };
+
+  const handleUsernameChange = () => {
+    if (newUsername) {
+      if (auth.currentUser) {
+        updateUsername(auth.currentUser.uid, newUsername);
+      }
+      setUsername(newUsername);
+      setNewUsername('');
+      setIsEditingUsername(false);
+    }
+  };
+
   return (
     <>
       <ParallaxScrollView
         headerBackgroundColor={{ light: '#F3F1EB', dark: '#958475' }}
-        headerHeight={200}
+        headerHeight={100}
         headerImage={
           <View style={styles.headerContainer}>
             <View style={styles.fixedHeader}>
@@ -98,8 +145,12 @@ export default function ProfileScreen() {
                 <MaterialIcons name="menu" size={24} color={textColor} />
               </Pressable>
             </View>
-            <Pressable onPress={pickImage}>
-              <View style={styles.profileImageContainer}>
+          </View>
+        }
+      >
+      <ThemedView style={styles.profileImageContainer}>
+        <Pressable onPress={pickImage}>
+              <View style={styles.profileImageWrapper}>
                 {profileImage ? (
                   <Image 
                     source={{ uri: profileImage }}
@@ -108,30 +159,36 @@ export default function ProfileScreen() {
                 ) : (
                   <View style={[styles.headerProfileImage, styles.initialsContainer]}>
                     <ThemedText style={styles.headerInitials}>
-                      {getInitials("John Doe")}
+                      {getInitials(username)}
                     </ThemedText>
                   </View>
                 )}
-                <View style={styles.editOverlay}>
-                  <MaterialIcons name="photo-camera" size={24} color="#fff" />
-                </View>
               </View>
             </Pressable>
-          </View>
-        }
-      >
+        </ThemedView>  
         <ThemedView style={[styles.titleContainer, { backgroundColor }]}>
           <ThemedView style={styles.profileInfo}>
-            <ThemedText style={[styles.username, { color: textColor }]}>Username</ThemedText>
+                <>
+                  <ThemedView style={styles.usernameContainer}>
+                    <ThemedText style={[styles.username, { color: textColor }]}>{username}</ThemedText>
+                    <Pressable 
+                      onPress={() => setIsEditingUsername(true)}
+                      style={({ pressed }) => [styles.editIconContainer, pressed && styles.pressed]}
+                    >
+                      <MaterialIcons name="edit" size={18} color={textColor} />
+                    </Pressable>
+                  </ThemedView>
+                </>
             <ThemedText style={[styles.memberSince, { color: textColor }]}>Member since January 2024</ThemedText>
             <ThemedView style={styles.buttonContainer}>
-              <Pressable 
+              <Pressable
                 onPress={() => Alert.alert('Edit Profile', 'Edit profile functionality coming soon!')}
                 style={({ pressed }) => [
                   styles.button,
                   { 
                     backgroundColor: sideColor,
-                    borderColor: textColor  // Update border color to match text
+                    borderColor: textColor,  // Update border color to match text
+                    alignContent: 'center',
                   },
                   pressed && styles.pressed
                 ]}
@@ -164,7 +221,6 @@ export default function ProfileScreen() {
             </ThemedView>
           </ThemedView>
         </ThemedView>
-
         <ThemedView style={styles.listSection}>
           <Pressable 
             style={({ pressed }) => [
@@ -172,9 +228,7 @@ export default function ProfileScreen() {
               { backgroundColor: sideColor },
               pressed && styles.pressed
             ]}
-            // onPress={() => Alert.alert('Been', 'Show visited cafes')}
-            onPress={() => router.push('/(tabs)/been')}
-            
+            onPress={() => navigateToList('been')}
           >
             <ThemedView style={styles.listItemLeft}>
               <MaterialIcons name="local-cafe" size={24} color={textColor} />
@@ -192,7 +246,7 @@ export default function ProfileScreen() {
               { backgroundColor: sideColor },
               pressed && styles.pressed
             ]}
-            onPress={() => Alert.alert('Want to Try', 'Show wishlist cafes')}
+            onPress={() => navigateToList('wantToTry')}
           >
             <ThemedView style={styles.listItemLeft}>
               <MaterialIcons name="location-on" size={24} color={textColor} />
@@ -210,7 +264,7 @@ export default function ProfileScreen() {
               { backgroundColor: sideColor },
               pressed && styles.pressed
             ]}
-            onPress={() => Alert.alert('Recs for You', 'Show recommendations')}
+            onPress={() => navigateToList('recommendations')}
           >
             <ThemedView style={styles.listItemLeft}>
               <MaterialIcons name="storefront" size={24} color={textColor} />
@@ -232,7 +286,7 @@ export default function ProfileScreen() {
           </View>
           
           <View style={styles.radioGroup}>
-            {['20', '50', '100', 'Customize'].map((value) => (
+            {['20', '50', '100'].map((value) => (
               <Pressable
                 key={value}
                 style={[
@@ -243,11 +297,51 @@ export default function ProfileScreen() {
                     opacity: goal === value ? 1 : 0.7
                   }
                 ]}
-                onPress={() => setGoal(value)}
+                onPress={() => {
+                  setGoal(value);
+                  setShowCustomInput(false);
+                }}
               >
                 <ThemedText style={[styles.radioText, { color: textColor }]}>{value}</ThemedText>
               </Pressable>
             ))}
+            {showCustomInput ? (
+              <TextInput
+                style={[
+                  styles.radioButton,
+                  styles.customizeInput,
+                  { 
+                    backgroundColor: sideColor,
+                    borderColor: textColor,
+                    color: textColor
+                  }
+                ]}
+                placeholder="Enter"
+                placeholderTextColor={textColor}
+                keyboardType="numeric"
+                value={customGoal}
+                onChangeText={setCustomGoal}
+                onSubmitEditing={handleCustomGoal}
+                autoFocus
+                onBlur={() => {
+                  if (!customGoal) setShowCustomInput(false);
+                }}
+              />
+            ) : (
+              <Pressable
+                style={[
+                  styles.radioButton,
+                  { 
+                    backgroundColor: sideColor,
+                    borderColor: textColor,
+                    opacity: 0.7
+                  }
+                ]}
+                onPress={() => setShowCustomInput(true)}
+              >
+                <ThemedText style={[styles.radioText, { color: textColor }]}>Customize</ThemedText>
+              </Pressable>
+            )}
           </View>
         </ThemedView>
 
@@ -280,37 +374,69 @@ export default function ProfileScreen() {
           </Pressable>
         </ThemedView>
       </ParallaxScrollView>
-      <GlobalDropdown 
-        visible={showMenu}
-        onClose={() => setShowMenu(false)}
-        textColor={textColor}
-        backgroundColor={backgroundColor}
-      />
+
+      <Modal
+        visible={isEditingUsername}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: backgroundColor }]}>
+            <ThemedText style={[styles.modalTitle, { color: textColor }]}>Edit Username</ThemedText>
+            <TextInput
+              style={[styles.input, { color: textColor, borderColor: textColor }]}
+              placeholder="Enter new username"
+              placeholderTextColor={textColor}
+              value={newUsername}
+              onChangeText={setNewUsername}
+            />
+            <TouchableOpacity onPress={handleUsernameChange} style={styles.editbutton}>
+              <ThemedText style={styles.editbuttonText}>Save</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setIsEditingUsername(false)} style={styles.editbutton}>
+              <ThemedText style={styles.editbuttonText}>Cancel</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    justifyContent: 'center',
     flex: 1,
   },
 
   headerContainer: {
-    height: 200,
+    height: 400,
+    resizeMode: 'cover',
     justifyContent: 'center',
     alignItems: 'center',
   },
   
+  profileImageContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 0,
+  },
+  
+  profileImageWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   headerProfileImage: {
     width: 150,
     height: 150,
-    borderRadius: 75,
+    borderRadius: 100,
   },
   
   headerInitials: {
-    fontSize: 54,
-    fontWeight: 'bold',
-    color: '#958475',
+    fontSize: 24,
+    color: '#fff',
   },
 
   titleContainer: {
@@ -342,6 +468,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 
+  editbutton: {
+    backgroundColor: '#958475',
+    padding: 10,
+    borderRadius: 30,
+    minWidth: 100,
+    alignItems: 'center',
+    margin: 5,
+  },
+  
+  editbuttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
   pressed: {
     opacity: 0.7,
   },
@@ -356,11 +497,8 @@ const styles = StyleSheet.create({
   },
 
   username: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 12,
-    marginBottom: 4,
-    color: '#958475',
   },
 
   memberSince: {
@@ -369,18 +507,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  profileImageContainer: {
-    position: 'relative',
-  },
-
   editOverlay: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 12,
+    padding: 4,
   },
 
   listSection: {
@@ -515,9 +648,9 @@ const styles = StyleSheet.create({
   },
 
   initialsContainer: {
-    backgroundColor: '#F3F1EB',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#ccc',
   },
 
   fixedHeader: {
@@ -535,6 +668,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   dropdown: {
@@ -568,5 +703,67 @@ const styles = StyleSheet.create({
 
   menuItemText: {
     fontSize: 16,
+  },
+
+  customizeInput: {
+    minWidth: 80,
+    textAlign: 'center',
+    padding: 8,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  containers: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: -120
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  usernameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editIconContainer: {
+    marginLeft: 6, // Increase the margin to make the space larger
+  },
+  usernameText: {
+    fontSize: 16,
+    color: 'black',
+  },
+  usernameInput: {
+    fontSize: 20,
+    color: 'black',
+    borderBottomColor: 'black',
+  },
+  usernameSection: {
+    fontSize: 16,
+    alignItems: 'center',
   },
 });
