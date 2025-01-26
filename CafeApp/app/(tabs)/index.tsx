@@ -73,10 +73,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: '#FAFAFA',
   },
   sectionContainer: {
     gap: 16,
@@ -91,11 +92,25 @@ const styles = StyleSheet.create({
     marginHorizontal: -16,
     marginTop: -10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  button: {
+    width: '90%',
+    backgroundColor: '#5C6BC0',
+    padding: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#5C6BC0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    marginTop: 15,
+  },
+  text: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
+
+
