@@ -130,12 +130,13 @@ export default function TabTwoScreen() {
       headerBackgroundColor={{ light: '#CCBDB3', dark: '#353636' }}
       headerHeight={150}
       headerImage={
-        <IconSymbol
-          size={210}
-          color='#958475'
-          name="cup.and.saucer"
-          style={styles.headerImage}
-        />
+        <ThemedView style={{ height: 100, width: '100%', position: 'relative', backgroundColor: 'transparent' }}>
+          <Image
+            source={require('@/assets/images/sip.png')}
+            style={styles.headerImage}
+            resizeMode='contain'
+          />
+        </ThemedView>
       }>
       <ThemedView style={styles.contentContainer}>
         <ThemedView style={styles.tabContainer}>
@@ -164,9 +165,11 @@ export default function TabTwoScreen() {
 
 const styles = StyleSheet.create({
   headerImage: {
-    color: '#808080',
-    bottom: -65,
-    left: -35,
+    height: 120,
+    width: 200,
+    bottom: -10,
+    left: 200,
+    top: 30,
     position: 'absolute',
   },
   titleContainer: {

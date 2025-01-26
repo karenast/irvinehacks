@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, View, Pressable } from 'react-native';
+import { Image, StyleSheet, Platform, View, Pressable, Text } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -32,14 +32,19 @@ export default function HomeScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#F2E8D3', dark: '#F2E8D3'
-      }}
+      headerBackgroundColor={{ light: '#F2E8D3', dark: '#F2E8D3' }}
       headerHeight={200}
       headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
+        <ThemedView>
+          <Image
+            source={require('@/assets/images/sleep.png')}
+            style={styles.reactLogo}
+            resizeMode="contain"
+          />
+          <ThemedText style={{fontSize: 25, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, backgroundColor: 'transparent', position: 'absolute', top: 120, left: 90, right: 0}}>
+            CafeApp
+          </ThemedText>
+        </ThemedView>
       }>
       <ThemedView style={styles.sectionContainer}>
         <ThemedView style={styles.titleContainer}>
@@ -87,6 +92,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    backgroundColor: 'transparent',
   },
   sectionContainer: {
     gap: 16,
@@ -102,16 +108,18 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
   reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+    height: 150,
+    width: 200,
+    bottom: -20,
+    left: -10,
+    top: 45,
     position: 'absolute',
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: 'transparent',
   },
   fixedHeader: {
     position: 'absolute',
@@ -119,6 +127,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
+    backgroundColor: 'transparent',
   },
   menuButton: {
     padding: 8,
