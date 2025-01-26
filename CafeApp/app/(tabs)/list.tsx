@@ -27,7 +27,7 @@ export default function TabThreeScreen() {
   const [location, setLocation] = useState('');
   const [locationPlaceholder, setLocationPlaceholder] = useState('Current Location');
   const [activeColor, setActiveColor] = useState('#69584B');
-  const beenCafes: Cafe[] = [{ id: '1', name: 'Cafe 1', tags: ['tag1', 'tag2'] }, { id: '2', name: 'Cafe 2', tags: ['tag1', 'tag2'] }];
+  const beenCafes: Cafe[] = [{ id: '1', name: 'Mariposa', tags: ['cozy', 'wifi'] }, { id: '2', name: 'Ever After Tearoom', tags: ['whimsical', 'open late'] }];
   const suggestedCafes: Cafe[] = [];
   //const friends: User[] = [];
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -60,8 +60,7 @@ export default function TabThreeScreen() {
               </ThemedView>
               </ThemedView>
               <ThemedView style={{flexDirection: 'row', gap: 16}}>
-              <MaterialIcons name="add-circle-outline" size={24} color="#958475" onPress={() => setIsModalVisible(true)} />
-              <MaterialIcons name="bookmark-border" size={24} color="#958475" onPress={() => console.log('Bookmark cafe')} />
+              <MaterialIcons name="bookmark" size={24} color="#958475" onPress={() => console.log('Bookmark cafe')} />
             </ThemedView>
             </ThemedView>
             <AddVisitModal

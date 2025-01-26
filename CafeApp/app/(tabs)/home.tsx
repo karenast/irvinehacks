@@ -14,6 +14,14 @@ import { AddVisitModal } from '@/components/AddVisitModal';
 import { getUsername } from '@/app/(tabs)/database-functions';
 import { auth } from '@/FirebaseConfig';
 import { hardcodedCafeId } from '@/app/(tabs)/database-functions';
+import MapView, { Marker } from 'react-native-maps';
+
+const INITIAL_REGION = {
+  latitude: 33.617,
+  longitude: -117.87,
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
+};
 
 export default function HomeScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -68,12 +76,16 @@ export default function HomeScreen() {
           </ThemedView>
         </ThemedView> 
         <ThemedView style={styles.feedContainer}>
-          <ThemedText type="subtitle">Map coming soon...</ThemedText>
-          <ThemedText>We'll show nearby cafes here with Google Maps integration</ThemedText>
+          <MapView
+            style={styles.map}
+            initialRegion={INITIAL_REGION}
+          >
+            {/* Add markers here if needed */}
+          </MapView>
         </ThemedView>
       </ThemedView>
       <ThemedView style={styles.sectionContainer}>
-        <ThemedText style={{fontSize: 16, fontWeight: 'bold', marginBottom: -10}}>Friends' Recent Visits</ThemedText>
+        <ThemedText style={{fontSize: 16, fontWeight: 'bold', marginBottom: 8, marginLeft: -10}}>Friends' Recent Visits</ThemedText>
         <ThemedView style={[styles.feedContainer, {backgroundColor: 'transparent'}]}>
           <ThemedView 
             style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderWidth: 0.5, borderColor: '#D9D2CD', borderRadius: 4, marginHorizontal: -8, backgroundColor: 'transparent'}} 
@@ -81,7 +93,7 @@ export default function HomeScreen() {
             <ThemedView 
               onTouchEnd={() => router.push({ pathname: '/(modals)/cafe', params: { id: hardcodedCafeId } }) }
               style={{flex: 1}}>
-              <ThemedText style={{fontSize: 16, fontWeight: '600'}}>Test Cafe</ThemedText>
+              <ThemedText style={{fontSize: 16, fontWeight: '600'}}>Mariposa</ThemedText>
               <ThemedView style={{flexDirection: 'row', gap: 8, marginTop: 4}}>
                 <ThemedText style={{fontSize: 12, color: '#958475'}}>#cozy</ThemedText>
                 <ThemedText style={{fontSize: 12, color: '#958475'}}>#wifi</ThemedText>
@@ -117,7 +129,7 @@ const styles = StyleSheet.create({
   },
   feedContainer: {
     gap: 8,
-    padding: 16,
+    padding: 0,
     borderRadius: 8,
     backgroundColor: 'rgba(242, 232, 211, 0.3)',
     color: Colors.light.background,
@@ -152,31 +164,8 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
+  map: {
+    width: '100%',
+    height: 200,
+  },
 });
-
-// import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, View } from 'react-native';
-// import React, { useState } from 'react';
-// import { auth } from '../../FirebaseConfig';
-// import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from 'firebase/auth';
-// import { router } from 'expo-router';
-// import { getFirestore, doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-
-// import MapView from 'react-native-maps';
-
-// export default function App() {
-//   return (
-//     <View style={styles.container}>
-//       <MapView style={styles.map} />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   map: {
-//     width: '70%',
-//     height: '70%',
-//   },
-// });
