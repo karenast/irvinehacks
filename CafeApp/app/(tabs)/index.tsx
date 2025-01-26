@@ -1,6 +1,6 @@
 import { Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
 import React, { useState } from 'react';
-import { auth } from '../FirebaseConfig';
+import { auth } from '../../FirebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from 'firebase/auth';
 import { router } from 'expo-router';
 import { getFirestore, doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -15,7 +15,7 @@ const Index = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const authenticatedUser = userCredential.user;
       setUser(authenticatedUser); // Update the user state
-      if (authenticatedUser) router.replace('/(tabs)');
+      if (authenticatedUser) router.replace('/(tabs)/home');
     } catch (error: any) {
       console.log(error);
       alert('Sign in failed: ' + error.message);
@@ -40,7 +40,7 @@ const Index = () => {
 
       // Update user state and navigate
       setUser(authenticatedUser);
-      if (authenticatedUser) router.replace('/(tabs)');
+      if (authenticatedUser) router.replace('/(tabs)/home');
     } catch (error: any) {
       console.log(error);
       alert('Sign up failed: ' + error.message);

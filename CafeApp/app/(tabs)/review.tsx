@@ -1,140 +1,96 @@
-import { Image, StyleSheet, Platform, View, Pressable, Text } from 'react-native';
-import { useColorScheme } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, View, Alert } from 'react-native';
+import { auth } from '../../FirebaseConfig';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { GlobalDropdown } from '@/components/GlobalDropdown';
-import {MaterialIcons} from '@expo/vector-icons';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { AddVisitModal } from '@/components/AddVisitModal';
+export default function TabOneScreen() {
 
-const user = 'John';
+  const postReview = async () => {
+    const hardcodedReview = "this is great";
+    const hardcodedCafeId = "Z7hKUbGQjvocdmzEj3n5"; // Cafe ID
+    const user = auth.currentUser;
 
-export default function HomeScreen() {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+    if (user) {
+      try {
+        const db = getFirestore();
 
-  const handleAddVisit = (rating: number, notes: string) => {
-    // TODO: Implement the logic to save the visit
-    console.log('Rating:', rating, 'Notes:', notes);
+        // Add the review to the "reviews" collection
+        const reviewDocRef = await addDoc(collection(db, 'reviews'), {
+          uid: user.uid,
+          review: hardcodedReview,
+          cafeId: hardcodedCafeId,
+        });
+
+        // Once the review is added, update the corresponding cafe document
+        const cafeDocRef = doc(db, 'Cafes', hardcodedCafeId);
+        await updateDoc(cafeDocRef, {
+          reviews: arrayUnion(reviewDocRef.id), // Append the review document ID to the "reviews" array in the cafe document
+        });
+
+        // Now, update the user's document to append the review document ID to the "reviews" array
+        const userDocRef = doc(db, 'users', user.uid); // Get the reference to the user's document
+        await updateDoc(userDocRef, {
+          reviews: arrayUnion(reviewDocRef.id), // Append the review document ID to the "reviews" array in the user's document
+        });
+
+        Alert.alert('Success', 'Review posted and added to the cafe and your profile!');
+      } catch (error) {
+        console.error('Error posting review:', error);
+      }
+    } else {
+      Alert.alert('Error', 'You need to be signed in to post a review!');
+    }
   };
 
-  // State for controlling menu visibility
-  const [showMenu, setShowMenu] = useState(false);
-  
-  // Get color scheme and set colors based on dark/light mode
-  const isDark = useColorScheme() === 'dark';
-  const textColor = isDark ? '#F3F1EB' : '#958475';
-  const backgroundColor = isDark ? '#958475' : '#F3F1EB';
+  getAuth().onAuthStateChanged((user) => {
+    if (!user) router.replace('/'); // Redirect to sign-in page if no user is logged in
+  });
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#F2E8D3', dark: '#F2E8D3' }}
-      headerHeight={200}
-      headerImage={
-        <ThemedView>
-          <Image
-            source={require('@/assets/images/sleep.png')}
-            style={styles.reactLogo}
-            resizeMode="contain"
-          />
-          <ThemedText style={{fontSize: 25, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, backgroundColor: 'transparent', position: 'absolute', top: 120, left: 90, right: 0}}>
-            Zot n Sip!
-          </ThemedText>
-        </ThemedView>
-      }>
-      <ThemedView style={styles.sectionContainer}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText style={{fontSize: 16, fontWeight: 'bold'}}>Welcome, {user}!</ThemedText>
-          <HelloWave />
-        </ThemedView>
-        <ThemedView style={styles.feedContainer}>
-          <ThemedText type="subtitle">Map coming soon...</ThemedText>
-          <ThemedText>We'll show nearby cafes here with Google Maps integration</ThemedText>
-        </ThemedView>
-      </ThemedView>
-      <ThemedView style={styles.sectionContainer}>
-        <ThemedText style={{fontSize: 16, fontWeight: 'bold', marginBottom: -10}}>Friends' Recent Visits</ThemedText>
-        <ThemedView style={[styles.feedContainer, {backgroundColor: 'transparent'}]}>
-          <ThemedView 
-            style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderWidth: 0.5, borderColor: '#D9D2CD', borderRadius: 4, marginHorizontal: -8, backgroundColor: 'transparent'}} 
-          >
-            <ThemedView 
-              onTouchEnd={() => router.push('/(modals)/cafe')}
-              style={{flex: 1}}>
-              <ThemedText style={{fontSize: 16, fontWeight: '600'}}>Test Cafe</ThemedText>
-              <ThemedView style={{flexDirection: 'row', gap: 8, marginTop: 4}}>
-                <ThemedText style={{fontSize: 12, color: '#958475'}}>#cozy</ThemedText>
-                <ThemedText style={{fontSize: 12, color: '#958475'}}>#wifi</ThemedText>
-              </ThemedView>
-            </ThemedView>
-            <ThemedView style={{flexDirection: 'row', gap: 16}}>
-              <MaterialIcons name="add-circle-outline" size={24} color="#958475" onPress={() => setIsModalVisible(true)} />
-              <MaterialIcons name="bookmark-border" size={24} color="#958475" onPress={() => console.log('Bookmark cafe')} />
-            </ThemedView>
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
-      <AddVisitModal
-        isVisible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        onSubmit={handleAddVisit}
-      />
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.title}>User Actions</Text>
+      <TouchableOpacity style={styles.button} onPress={() => auth.signOut()}>
+        <Text style={styles.text}>Sign Out</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={postReview}>
+        <Text style={styles.text}>Post Review</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'transparent',
+    backgroundColor: '#FAFAFA',
   },
-  sectionContainer: {
-    gap: 16,
-    marginBottom: 24,
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#1A237E',
+    marginBottom: 40,
   },
-  feedContainer: {
-    gap: 8,
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(242, 232, 211, 0.3)',
-    color: Colors.light.background,
-    marginHorizontal: -16,
-    marginTop: -10,
-  },
-  reactLogo: {
-    height: 150,
-    width: 200,
-    bottom: -20,
-    left: -10,
-    top: 45,
-    position: 'absolute',
-  },
-  headerContainer: {
-    flexDirection: 'row',
+  button: {
+    width: '90%',
+    backgroundColor: '#5C6BC0',
+    padding: 20,
+    borderRadius: 15,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    shadowColor: '#5C6BC0',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    marginTop: 15,
   },
-  fixedHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: 'transparent',
-  },
-  menuButton: {
-    padding: 8,
-  },
-  pressed: {
-    opacity: 0.7,
+  text: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
 
