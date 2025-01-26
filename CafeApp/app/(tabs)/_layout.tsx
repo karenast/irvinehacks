@@ -56,6 +56,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <MaterialIcons name="bookmark" size={24} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="list"
+        options={{
+          title: 'List',
+          tabBarIcon: ({ color }) => <MaterialIcons name="bookmark" size={24} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
