@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Image, Platform, Pressable, Alert, View, useColorScheme, Modal, TextInput, Button, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useContext, useState , createContext} from 'react';
+import { useContext, useState , createContext, useEffect} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { router } from 'expo-router';
@@ -13,6 +13,9 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 //import { IconSymbol } from '@/components/ui/IconSymbol';
 import { MaterialIcons } from '@expo/vector-icons';
+import { auth } from '../../FirebaseConfig';
+import { getUsername, updateUsername } from '@/app/(tabs)/database-functions';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 type RootStackParamList = {
   Lists: { initialTab: 'Been' | 'Want to Try' | 'Recs' };
@@ -36,7 +39,18 @@ export default function ProfileScreen() {
   const [showMenu, setShowMenu] = useState(false);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customGoal, setCustomGoal] = useState('');
-  const [username, setUsername] = useState('username');
+  const [username, setUsername] = useState('User');
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (auth.currentUser) {
+        const fetchedUsername = await getUsername(auth.currentUser.uid);
+        setUsername(fetchedUsername ?? '');
+      }
+    };
+    fetchUsername();
+  }, []);
+
   const [newUsername, setNewUsername] = useState('');
   const [isEditingUsername, setIsEditingUsername] = useState(false);
 
@@ -107,6 +121,9 @@ export default function ProfileScreen() {
 
   const handleUsernameChange = () => {
     if (newUsername) {
+      if (auth.currentUser) {
+        updateUsername(auth.currentUser.uid, newUsername);
+      }
       setUsername(newUsername);
       setNewUsername('');
       setIsEditingUsername(false);

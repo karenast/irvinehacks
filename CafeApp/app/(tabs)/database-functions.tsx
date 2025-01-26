@@ -2,9 +2,23 @@ import { StyleSheet, TouchableOpacity, Text, View, Alert } from 'react-native';
 import { auth } from '../../FirebaseConfig';
 import { router } from 'expo-router';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 const hardcodedReview = "this is great";
-export const hardcodedCafeId = "Z7hKUbGQjvocdmzEj3n5"; // Cafe ID
+export const hardcodedCafeId = "ChIJ16OptRTw3IAReW8A9mYTKbg"; // Cafe ID
+
+export async function getUsername(uid: string): Promise<string> {
+  const db = getFirestore();
+  const userDoc = await doc(db, 'users', uid);
+  const userDocSnap = await getDoc(userDoc);
+  const userData = userDocSnap.data();
+  return userData ? userData.username : '';
+}
+
+export async function updateUsername(uid: string, newUsername: string): Promise<void> {
+  const db = getFirestore();
+  const userDoc = doc(db, 'users', uid);
+  await updateDoc(userDoc, { username: newUsername });
+}
 
 export async function postReview(cafe: String = hardcodedCafeId, rating: number, review: any = hardcodedReview): Promise<boolean> {
   const user = auth.currentUser;
@@ -21,11 +35,11 @@ export async function postReview(cafe: String = hardcodedCafeId, rating: number,
         rating: rating,
       });
 
-      // Once the review is added, update the corresponding cafe document
-      // const cafeDocRef = doc(db, 'Cafes', hardcodedCafeId);
-      // await updateDoc(cafeDocRef, {
-      //   reviews: arrayUnion(reviewDocRef.id), // Append the review document ID to the "reviews" array in the cafe document
-      // });
+      //Once the review is added, update the corresponding cafe document
+      const cafeDocRef = doc(db, 'Cafes', hardcodedCafeId);
+      await updateDoc(cafeDocRef, {
+        reviews: arrayUnion(reviewDocRef.id), // Append the review document ID to the "reviews" array in the cafe document
+      });
 
       // Now, update the user's document to append the review document ID to the "reviews" array
       const userDocRef = doc(db, 'users', user.uid); // Get the reference to the user's document

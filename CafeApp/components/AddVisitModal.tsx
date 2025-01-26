@@ -4,7 +4,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { MaterialIcons } from '@expo/vector-icons';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { postReview, hardcodedCafeId } from '@/app/(tabs)/review';
+import { postReview, hardcodedCafeId } from '@/app/(tabs)/database-functions';
 
 interface AddVisitModalProps {
   isVisible: boolean;

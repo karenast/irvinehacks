@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Platform, View, Pressable, Text } from 'react-native';
 import { useColorScheme } from 'react-native';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -11,11 +11,24 @@ import { GlobalDropdown } from '@/components/GlobalDropdown';
 import {MaterialIcons} from '@expo/vector-icons';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { AddVisitModal } from '@/components/AddVisitModal';
-
-const user = 'John';
+import { getUsername } from '@/app/(tabs)/database-functions';
+import { auth } from '@/FirebaseConfig';
 
 export default function HomeScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (auth.currentUser) {
+        const user = await getUsername(auth.currentUser.uid);
+        setUsername(user);
+      }
+    };
+    fetchUsername();
+  }, []);
+ 
 
   const handleAddVisit = (rating: number, notes: string) => {
     // TODO: Implement the logic to save the visit
@@ -49,7 +62,7 @@ export default function HomeScreen() {
       <ThemedView style={styles.sectionContainer}>
         <ThemedView style={styles.sectionContainer}>
           <ThemedView style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
-            <ThemedText style={{fontSize: 16, fontWeight: 'bold'}}>Welcome, {user}!</ThemedText>
+            <ThemedText style={{fontSize: 16, fontWeight: 'bold'}}>Welcome{username ? ', ' + username : ""}!</ThemedText>
             <HelloWave />
           </ThemedView>
         </ThemedView> 

@@ -8,12 +8,13 @@ import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { AddVisitModal } from '@/components/AddVisitModal';
-import { postReview, hardcodedCafeId } from '../(tabs)/review';
+import { postReview, hardcodedCafeId } from '../(tabs)/database-functions';
 
 const currentIcon = "add-circle-outline";
 export default function CafeScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false); // State to track if the review is submitted
+  
   const checkUserReview = async (cafeId: string, userId: string) => {
     try {
       const response = await axios.get(`/api/reviews?cafeId=${cafeId}&userId=${userId}`);
@@ -23,12 +24,14 @@ export default function CafeScreen() {
       throw error;
     }
   };
-  
-  const handleAddVisit = (rating: number, notes: string) => {
-    // TODO: Implement the logic to save the visit
-    console.log('Rating:', rating, 'Notes:', notes);
-    postReview(hardcodedCafeId, rating, notes);
-    setIsSubmitted(true); // Set the submitted state to true
+
+  const handleAddVisit = async (rating: number, notes: string) => {
+    try {
+      await postReview(hardcodedCafeId, rating, notes);
+      setIsSubmitted(true); // Set the submitted state to true
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+    }
   };
 
   return (
