@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Platform } from 'react-native';
+import { ScrollView, StyleSheet, Platform, View, Alert, Text } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import axios from 'axios';
 
@@ -7,11 +7,13 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { AddVisitModal } from '@/components/AddVisitModal';
 import { postReview, hardcodedCafeId } from '../../(tabs)/database-functions';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { ImageBackground, Image } from 'react-native';
+import MapView, { Marker, Callout } from 'react-native-maps'; // Import MapView
+
+import { getFirestore, collection, getDocs, GeoPoint, doc, getDoc } from 'firebase/firestore';
+import { auth } from '../../FirebaseConfig';
 
 // Initialize Firebase
 const db = getFirestore();
@@ -24,15 +26,20 @@ interface Cafe {
 
 const currentIcon = "add-circle-outline";
 
+const INITIAL_REGION = {
+  latitude: 33.64,
+  longitude: -117.84,
+  latitudeDelta: 2,
+  longitudeDelta: 2,
+};
+
 export default function CafeScreen() {
   const route = useRoute();
-  console.log('Route params:', route.params);
   const { cafe } = route.params as { cafe: string };
   const { id } = route.params as { id: string };
-  console.log(cafe);
-  console.log(id);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false); // State to track if the review is submitted
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [cafeData, setCafeData] = useState<Cafe | null>(null);
   const [image, setImage] = useState('');
   const [name, setName] = useState('Not Yet Loaded');
@@ -50,30 +57,56 @@ export default function CafeScreen() {
       } catch (error) {
         console.error('Error fetching cafe data:', error);
       }
-      console.log('Cafe data:', name);
     };
 
     fetchCafeData();
     setImage(cafeData?.imageUrl || '');
     setName(cafeData?.name || 'Loading...');
-    console.log('name:', name);
-    console.log('image:', image);
   }, [cafe]);
 
-  // const checkUserReview = async (cafeId: string, userId: string) => {
-  //   try {
-  //     const response = await axios.get(`/api/reviews?cafeId=${cafeId}&userId=${userId}`);
-  //     return response.data.length > 0; // Return true if the user has reviewed the cafe
-  //   } catch (error) {
-  //     console.error('Error checking user review:', error);
-  //     throw error;
-  //   }
-  // };
+  const [cafes, setCafes] = useState([]); // State to hold cafes
+  
+  // Fetch cafes from Firestore
+  useEffect(() => {
+    const fetchCafes = async () => {
+      try {
+        const db = getFirestore();  // Make sure to initialize Firestore correctly
+        const cafesCollection = collection(db, 'Cafes');
+        const cafeSnapshot = await getDocs(cafesCollection);
+        
+        const cafeList: Cafe[] = cafeSnapshot.docs.map((doc) => {
+          const data = doc.data() as DocumentData; // Type the document data as DocumentData
+          const ratings = data.ratings || []; // Assuming ratings is an array
+
+          // Calculate average rating
+          const averageRating = ratings.length > 0 
+            ? (ratings.reduce((acc: number, curr: number) => acc + curr, 0) / ratings.length).toFixed(1) 
+            : '0.0'; // Default to '0.0' if no ratings are available
+
+          return {
+            id: doc.id,
+            name: data.name,
+            location: data.location, // Assuming location is a GeoPoint
+            ratings: ratings,
+            averageRating: averageRating, // Round the rating to 1 decimal place
+          };
+        });
+        
+        setCafes(cafeList);
+      } catch (error) {
+        console.error("Error fetching cafes: ", error);
+        Alert.alert("Error", "Failed to fetch cafes." + error);
+      }
+    };
+
+    fetchCafes();
+  }, []);
+
 
   const handleAddVisit = async (rating: number, notes: string) => {
     try {
       await postReview(hardcodedCafeId, rating, notes);
-      setIsSubmitted(true); // Set the submitted state to true
+      setIsSubmitted(true);
     } catch (error) {
       console.error('Failed to submit review:', error);
     }
@@ -88,47 +121,54 @@ export default function CafeScreen() {
   }
 
   return (
-    
     <ThemedView style={styles.container}>
       <ImageBackground
-          source={{ uri: cafeData.imageUrl }} // Use cafeData.imageUrl directly
-          style={styles.backgroundImage}
-        ></ImageBackground>
-        <ThemedView style={styles.overlayContainer}>
-          <ThemedText style={[styles.overlayTitle, { fontSize: 25, fontWeight: '700', marginBottom: -10 }]} type='title'>{name}</ThemedText>
-          <ThemedView style={styles.actionButtons}>
-            <ThemedView style={styles.transparentButton}>
-              {isSubmitted ? (
-                <MaterialIcons name='check-circle' size={42} color="#423932" /> // Show check icon if submitted
-              ) : (
-                <MaterialIcons 
-                  name="add-circle-outline" 
-                  size={42} 
-                  color="#423932" 
-                  onPress={() => setIsModalVisible(true)} 
-                />
-              )}
-            </ThemedView>
-            <ThemedView style={styles.transparentButton}>
-              <MaterialIcons name="bookmark-border" size={42} color="#423932" onPress={() => console.log('Bookmark cafe')} />
-            </ThemedView>
-          </ThemedView>
+        source={{ uri: cafeData.imageUrl }} // Use cafeData.imageUrl directly
+        style={styles.backgroundImage}
+      />
+      <ThemedView style={styles.overlayContainer}>
+        <ThemedText style={styles.overlayTitle}>{name}</ThemedText>
+        <ThemedView style={styles.actionButtons}>
+          <MaterialIcons
+            name={isSubmitted ? 'check-circle' : 'add-circle-outline'}
+            size={42}
+            color="#423932"
+            onPress={() => setIsModalVisible(true)}
+          />
+        </ThemedView>
       </ThemedView>
 
-      <ThemedView style={styles.tagsContainer}>
-      </ThemedView> 
-
       <ThemedView style={styles.infoSection}>
-        <ThemedText style={styles.sectionTitle}>About</ThemedText>
-        <ThemedText style={styles.description}>
-        </ThemedText>
+        <ThemedText style={styles.sectionTitle}>Location</ThemedText>
+        <ThemedText style={styles.description}></ThemedText>
       </ThemedView>
 
       <AddVisitModal
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
-        onSubmit={handleAddVisit}        
+        onSubmit={handleAddVisit}
       />
+
+      {/* Map section - placed at the bottom */}
+      <View style={styles.container}>
+      <MapView style={styles.map} initialRegion={INITIAL_REGION}>
+        {cafes.map((cafe) => (
+          <Marker
+            key={cafe.id}
+            coordinate={{
+              latitude: cafe.location.latitude,
+              longitude: cafe.location.longitude
+            }}
+            title={cafe.name} // Display cafe name when marker is clicked
+          ><Callout>
+          <View>
+            <Text>{cafe.name}</Text>
+            <Text>Average Rating: {cafe.averageRating}</Text> {/* Display the average rating */}
+          </View>
+        </Callout></Marker>
+        ))}
+      </MapView>
+    </View>
     </ThemedView>
   );
 }
@@ -138,20 +178,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background,
   },
-  imageContainer: {
+  backgroundImage: {
     height: 300,
-    backgroundColor: '#F2E8D3',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
+    resizeMode: 'cover',
+    opacity: 0.4,
   },
   overlayContainer: {
-    position: 'relative',
-    bottom: 450,
-    left: 9,
+    position: 'absolute',
+    bottom: 200, // Adjust based on your design
+    left: 20,
     flexDirection: 'row',
-    overflow: 'hidden',
-    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
@@ -159,53 +195,28 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#423932',
-    backgroundColor: 'transparent',
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 0,
-    backgroundColor: 'transparent',
-  },
-  transparentButton: {
-    backgroundColor: 'transparent',
-    padding: 8,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    marginLeft: 12,
-    marginTop: 12,
-  },
-  tag: {
-    backgroundColor: Colors.light.background,
-    padding: 7,
-    borderRadius: 20,
-    paddingTop: 2,
-    paddingBottom: 2,
-    fontWeight: 700,
-    marginRight: 8,
-    borderWidth: 1.5,
-    fontSize: 12,
-    borderColor: '#D9D2CD',
   },
   infoSection: {
     padding: 16,
-    position: 'relative',
-    top: -450,
+    marginTop: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
   description: {
     fontSize: 16,
   },
-  backgroundImage: {
+  mapContainer: {
     flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'center',
-    opacity: .4,
-    height: 300,
+    marginTop: 20,
+    height: 300, // Set a fixed height for the map
+  },
+  map: {
+    width: '100%',
+    height: '100%',
   },
 });
