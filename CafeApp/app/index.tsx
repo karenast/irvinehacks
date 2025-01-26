@@ -1,7 +1,7 @@
 import { Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth } from '../FirebaseConfig';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, User, onAuthStateChanged  } from 'firebase/auth';
 import { router, useNavigation } from 'expo-router';
 import { getFirestore, doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { HelloWave } from '@/components/HelloWave';
@@ -17,8 +17,19 @@ const Index = () => {
   useEffect(() => {
     // Hide the tab bar when this screen mounts
     navigation.setOptions({
-      tabBarStyle: { display: 'none' }
+      tabBarStyle: { display: 'none' },
     });
+
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (authenticatedUser) => {
+      if (authenticatedUser) {
+        setUser(authenticatedUser);
+        router.replace('/(tabs)/home'); // Redirect to home if signed in
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return unsubscribe;
   }, []);
 
   const signIn = async () => {
