@@ -11,6 +11,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { MaterialIcons } from '@expo/vector-icons';
 import { GlobalDropdown } from '@/components/GlobalDropdown';
+import { router } from 'expo-router';
 
 const getInitials = (name: string) => {
   return name
@@ -171,7 +172,9 @@ export default function ProfileScreen() {
               { backgroundColor: sideColor },
               pressed && styles.pressed
             ]}
-            onPress={() => Alert.alert('Been', 'Show visited cafes')}
+            // onPress={() => Alert.alert('Been', 'Show visited cafes')}
+            onPress={() => router.push('/been')}
+            
           >
             <ThemedView style={styles.listItemLeft}>
               <MaterialIcons name="local-cafe" size={24} color={textColor} />
