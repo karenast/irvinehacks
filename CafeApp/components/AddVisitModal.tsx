@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { MaterialIcons } from '@expo/vector-icons';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { postReview, hardcodedCafeId } from '@/app/(tabs)/review';
 
 interface AddVisitModalProps {
   isVisible: boolean;
@@ -14,7 +15,7 @@ interface AddVisitModalProps {
 export function AddVisitModal({ isVisible, onClose, onSubmit }: AddVisitModalProps) {
   const [rating, setRating] = useState(0);
   const [notes, setNotes] = useState('');
-  
+  const isSubmitDisabled = rating === 0;
   return (
     <Modal
       animationType="slide"
@@ -56,10 +57,13 @@ export function AddVisitModal({ isVisible, onClose, onSubmit }: AddVisitModalPro
           </ScrollView>
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
-              style={styles.button} 
+              style={isSubmitDisabled ? styles.disabledbutton : styles.button} 
               onPress={() => {
-                onSubmit(rating, notes);
-                onClose();
+                if (!isSubmitDisabled) {
+                  onSubmit(rating, notes);
+                  postReview(hardcodedCafeId, rating, notes); // FIX
+                  onClose();
+                }
               }}
             >
               <ThemedText style={styles.buttonText}>Submit</ThemedText>
@@ -109,6 +113,13 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#958475',
+    padding: 10,
+    borderRadius: 10,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  disabledbutton: {
+    backgroundColor: '#BFB7AE',
     padding: 10,
     borderRadius: 10,
     minWidth: 100,

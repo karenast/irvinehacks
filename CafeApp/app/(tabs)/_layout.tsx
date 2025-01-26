@@ -29,12 +29,10 @@ export default function TabLayout() {
         }),
       }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-          tabBarActiveBackgroundColor: '#F3F1EB',
-          tabBarInactiveBackgroundColor: '#F3F1EB',
         }}
       />
       <Tabs.Screen
@@ -42,8 +40,6 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          tabBarActiveBackgroundColor: '#F3F1EB',
-          tabBarInactiveBackgroundColor: '#F3F1EB',
         }}
       />  
       <Tabs.Screen
@@ -51,6 +47,13 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <MaterialIcons name="person" size={24} color={color} />,
+        }}
+        />
+        <Tabs.Screen
+        name="list"
+        options={{
+          title: 'Lists',
+          tabBarIcon: ({ color }) => <MaterialIcons name="bookmark" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

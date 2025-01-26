@@ -1,13 +1,14 @@
-import { Image, StyleSheet, Platform, View, Pressable, Text, useColorScheme } from 'react-native';
-import { router } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Image, Platform, View, Pressable, useColorScheme } from 'react-native';
 import { useState } from 'react';
+import { router } from 'expo-router';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { GlobalDropdown } from '@/components/GlobalDropdown';
-import {MaterialIcons} from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { AddVisitModal } from '@/components/AddVisitModal';
 
@@ -65,7 +66,7 @@ export default function HomeScreen() {
               style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderWidth: 0.5, borderColor: '#D9D2CD', borderRadius: 4, marginHorizontal: -8, backgroundColor: 'transparent'}} 
             >
               <ThemedView 
-                onTouchEnd={() => router.push('/(modals)/cafe')}
+                onTouchEnd={() => router.push({ pathname: '/(modals)/cafe' })}
                 style={{flex: 1}}>
                 <ThemedText style={{fontSize: 16, fontWeight: '600', color: textColor}}>Test Cafe</ThemedText>
                 <ThemedView style={{flexDirection: 'row', gap: 8, marginTop: 4}}>
@@ -87,19 +88,19 @@ export default function HomeScreen() {
         />
       </ParallaxScrollView>
       <View style={[styles.bottomNav, { backgroundColor }]}>
-        <Pressable style={styles.navItem} onPress={() => router.push('./index')}>
+        <Pressable style={styles.navItem} onPress={() => router.push({ pathname: '/' })}>
           <MaterialIcons name="home" size={24} color={textColor} />
           <ThemedText style={[styles.navText, { color: textColor }]}>Home</ThemedText>
         </Pressable>
-        <Pressable style={styles.navItem} onPress={() => router.push('./explore')}>
+        <Pressable style={styles.navItem} onPress={() => router.push({ pathname: '/(tabs)/explore' })}>
           <MaterialIcons name="explore" size={24} color={textColor} />
           <ThemedText style={[styles.navText, { color: textColor }]}>Explore</ThemedText>
         </Pressable>
-        <Pressable style={styles.navItem} onPress={() => router.push('./list')}>
+        <Pressable style={styles.navItem} onPress={() => router.push({ pathname: '/(tabs)/list' })}>
           <MaterialIcons name="list" size={24} color={textColor} />
           <ThemedText style={[styles.navText, { color: textColor }]}>List</ThemedText>
         </Pressable>
-        <Pressable style={styles.navItem} onPress={() => router.push('./profile')}>
+        <Pressable style={styles.navItem} onPress={() => router.push({ pathname: '/(tabs)/profile' })}>
           <MaterialIcons name="person" size={24} color={textColor} />
           <ThemedText style={[styles.navText, { color: textColor }]}>Profile</ThemedText>
         </Pressable>
